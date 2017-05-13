@@ -1,5 +1,7 @@
 (defpackage py.path.details.nt
-  (:use :cl :alexandria))
+  (:use :cl :alexandria)
+  (:export splitdrive
+           split))
 
 (in-package py.path.details.nt)
 
@@ -15,16 +17,15 @@
 
 (defun splitdrive (path)
   "Split a path to the drive (with letter) and path after drive.
-UNC paths like //host/computer/dir are not supporte (yet)
 Example:
   (splitdrive \"C:\\Sources\\lisp\")
   => (\"C:\" \"\\Sources\\lisp\")"
   (let ((norm (posixify path)))
-    (cond ((and (> (length path) 1)
-                (char= (char norm 1) #\:))
+    (cond ((and (> (length path) 1)     
+                (char= (char norm 1) #\:)) ; paths starting with "X:"
            (cons (subseq path 0 2)
                  (subseq path 2)))
-          ((starts-with-subseq +unc-prefix+ norm)
+          ((starts-with-subseq +unc-prefix+ norm) ; paths starting with "//"
            (if-let ((pos (position +posix-separator+ norm :start 2)))
                (if-let ((pos1 (position +posix-separator+ norm :start (1+ pos))))
                  (cons (subseq path 0 pos1)

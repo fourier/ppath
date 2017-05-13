@@ -5,7 +5,7 @@
 (defpackage pypath.test.base
   (:use :cl
         :prove)
-  (:export testfile random-shuffle random-shufflef))
+  (:export testfile test-input random-shuffle random-shufflef))
    
 (in-package :pypath.test.base)
 
@@ -18,6 +18,20 @@
 
 (defun testfile (filename)
   (merge-pathnames filename *test-data-path*))
+
+
+(defmacro test-input (fun inp out)
+  ;; example of generated code:
+  ;; (is (py.path.details.nt::splitdrive "C:\\")
+  ;;     '("C:" . "\\")
+	;;   :test #'equal
+  ;;     "Testing input: 'C:\\'"))
+  (let ((inp-string
+         (format nil "Testing input: '~a'" inp)))
+    `(is (,fun ,inp)
+         ,out
+         :test #'equal
+         ,inp-string)))
 
 
 (defmethod random-shufflef ((container list))
