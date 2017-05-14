@@ -1,7 +1,8 @@
 (defpackage py.path.details.nt
   (:use :cl :alexandria)
   (:export splitdrive
-           split))
+           split
+           splitunc))
 
 (in-package py.path.details.nt)
 
@@ -47,3 +48,11 @@ the last '/' and tail is the last '/'"
               (subseq p (1+ last-slash-pos)))
         (cons "" path))))
 
+
+
+(defun splitunc(path)
+  "Split a pathname with UNC path. UNC syntax:
+\\host-name\share-name\file_path
+Return a cons pair (host-name\share-name . file_path)"
+  )
+  

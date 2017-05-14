@@ -8,7 +8,7 @@
         :py.path.details.nt
         :pypath.test.base
         :prove)
-  (:shadowing-import-from py.path.details.nt splitdrive))
+  (:shadowing-import-from py.path.details.nt splitdrive splitunc))
 (in-package :py.path.test.nt-test)
 
 ;;(shadowing-import 'py.path.details.nt::splitdrive)
@@ -37,5 +37,20 @@
   (test-input split "//host-name/share-name/" '("//host-name/share-name/" . "")))
 
 
+(subtest "Test splitunc"
+  (test-input splitunc "c:\\Sources\\lisp" '("" . "c:\\Sources\\lisp"))
+  (test-input splitunc "c:/Sources/lisp" '("" . "c:/Sources/lisp"))
+  (test-input splitunc "\\\\host-name\\share-name\\Sources\\lisp"
+              '("\\\\host-name\\share-name" . "\\Sources\\lisp"))
+  (test-input splitunc "//host-name/share-name/Sources/lisp"
+              '("//host-name/share-name" . "/Sources/lisp"))
+  (test-input splitunc "\\\\\\host-name\\share-name\\Sources\\lisp"
+              '("" . "\\\\\\host-name\\share-name\\Sources\\lisp"))
+  (test-input splitunc "///host-name/share-name/Sources/lisp"
+              '("" . "///host-name/share-name/Sources/lisp"))
+  (test-input splitunc "\\\\host-name\\\\share-name\\Sources\\lisp"
+              '("" . "\\\\host-name\\\\share-name\\Sources\\lisp"))
+  (test-input splitunc "//host-name//share-name/Sources/lisp"
+              '("" . "//host-name//share-name/Sources/lisp")))
 
 (finalize)
