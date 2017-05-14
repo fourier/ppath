@@ -49,7 +49,6 @@ the last '/' and tail is the last '/'"
         (cons "" path))))
 
 
-
 (defun splitunc(path)
   "Split a pathname with UNC path. UNC syntax:
 \\host-name\share-name\file_path
