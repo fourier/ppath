@@ -34,7 +34,8 @@
   (test-input split "c:\\" '("c:\\" . ""))
   (test-input split "\\\\host-name\\share-name\\" '("\\\\host-name\\share-name\\" . ""))
   (test-input split "c:/" '("c:/" . ""))
-  (test-input split "//host-name/share-name/" '("//host-name/share-name/" . "")))
+  (test-input split "//host-name/share-name/" '("//host-name/share-name/" . ""))
+  (test-input split "//host-name/share-name" '("//host-name/share-name" . "")))
 
 
 (subtest "Test splitunc"

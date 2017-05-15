@@ -37,16 +37,22 @@ Example:
 
 
 (defun split (path)
-  "Split a path to the pair (head tail) where head is everything before
-the last '/' and tail is the last '/'"
+  "Split a path to the pair (head . tail) where head is everything before
+the last '/' and tail is after the last '/'.
+The slashes are stripped from the head and tail.
+If the head is a drive name, the slashes are not stripped from it."
   (let* ((split (splitdrive path))
          (drive (car split))
          (p     (cdr split))
-         (last-slash-pos (position +posix-separator+ (posixify p) :from-end t)))
-    (if last-slash-pos 
-        (cons (concatenate 'string drive (subseq p 0 last-slash-pos))
-              (subseq p (1+ last-slash-pos)))
-        (cons "" path))))
+         (last-slash-pos (position +posix-separator+ (posixify path) :from-end t)))
+    (format t "drive ~a path ~a last-slash-pos ~a length ~a~%" drive p last-slash-pos (length path))
+    (cond ((and last-slash-pos (< last-slash-pos (1- (length path))))
+           (cons (subseq path 0 last-slash-pos)
+                 (subseq path (1+ last-slash-pos))))
+          ((and drive (or (not p) (string= (posixify p) +posix-separator+)))               ; case when only drive like C:\\ provided
+           (cons path ""))
+           (t (cons "" path)))))
+        
 
 
 (defun splitunc(path)
