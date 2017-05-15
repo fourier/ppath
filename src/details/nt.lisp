@@ -47,23 +47,21 @@ the last '/' and tail is after the last '/'.
 The slashes are stripped from the head and tail.
 If the head is a drive name, the slashes are not stripped from it."
   (flet ((sep-p (c) (or (char= c #\\) (char= c #\/))))
-	(let* ((split (splitdrive path))
-		   (drive (car split))
-		   (p     (cdr split))
-		   (i (position-if #'sep-p p :from-end t)) ; position of the last slash
-		   (ni (if i (1+ i) 0))			   ; position after last slash
-		   ;; split to head and tail at the position after the last slash
-		   (head (subseq p 0 ni))
-		   (tail (subseq p ni))
-		   ;; position in the head of first non-separator
-		   (j (position-if-not #'sep-p head :from-end t))) 
-	  (cons (concatenate 'string
-						 drive
-						 (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
-			tail))))
+    (destructuring-bind (drive . p) (splitdrive path)
+      (let* ((i (position-if #'sep-p p :from-end t)) ; position of the last slash
+             (ni (if i (1+ i) 0))			   ; position after last slash
+             ;; split to head and tail at the position after the last slash
+             (head (subseq p 0 ni))
+             (tail (subseq p ni))
+             ;; position in the head of first non-separator
+             (j (position-if-not #'sep-p head :from-end t))) 
+        (cons (concatenate 'string
+                           drive
+                           (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
+              tail)))))
  
 
-(defun splitunc(path)
+(defun splitunc (path)
   "Split a pathname with UNC path. UNC syntax:
 \\\\host-name\\share-name\\file_path
 Return a cons pair (\\\\host-name\\share-name . \\file_path)"
@@ -81,3 +79,26 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 		;; otherwise head is empty but tail is the path given
 		(cons "" path))))
 
+
+(defun isabs (path)
+  "Return t if the path is absolute."
+  (destructuring-bind (drive . p) (splitdrive path)
+    (declare (ignore drive))
+    (and (> (length p) 0)
+         (let ((c (char p 0)))
+           (or (char= c #\\) (char= c #\/))))))
+
+
+(defun normcase (path)
+  "Replace slash with backslahes and lowers the case of the string"
+  (string-downcase (posixify path)))
+
+
+(defun basename (path)
+  "Returns filename portion of path"
+  (cdr (split path)))
+
+
+(defun dirname (path)
+  "Returns directory portion of path"
+  (car (split path)))

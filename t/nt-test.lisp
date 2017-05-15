@@ -8,7 +8,14 @@
         :py.path.details.nt
         :pypath.test.base
         :prove)
-  (:shadowing-import-from py.path.details.nt splitdrive splitunc))
+  (:shadowing-import-from py.path.details.nt
+                          split
+                          splitdrive
+                          splitunc
+                          isabs
+                          normcase
+                          basename
+                          dirname))
 (in-package :py.path.test.nt-test)
 
 ;;(shadowing-import 'py.path.details.nt::splitdrive)
@@ -55,6 +62,28 @@
               '("" . "\\\\host-name\\\\share-name\\Sources\\lisp"))
   (test-input splitunc "//host-name//share-name/Sources/lisp"
               '("" . "//host-name//share-name/Sources/lisp")))
+
+
+(subtest "Test isabs"
+  (test-input isabs "c:\\" t)
+  (test-input isabs "\\Sources" t)
+  (test-input isabs "/Sources/lisp" t)
+  (test-input isabs "\\\\host-name\\share-name\\" t)
+  (test-input isabs "my/dir" nil)
+  (test-input isabs "my\\dir1\dir2" nil)
+  (test-input isabs "file.txt" nil))
+
+
+(subtest "Test normcase"
+  (test-input normcase "C:\\" "c:/"))
+
+
+(subtest "Test basename"
+  (test-input basename "C:\\dir\\file.txt" "file.txt"))
+
+
+(subtest "Test dirname"
+  (test-input dirname "C:\\dir\\file.txt" "C:\\dir"))
 
 
 (finalize)
