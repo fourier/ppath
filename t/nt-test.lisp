@@ -24,7 +24,9 @@
   (test-input splitdrive "C:/Sources/lisp" '("C:" . "/Sources/lisp"))
   (test-input splitdrive "//host-name/share-name/dir" '("//host-name/share-name" . "/dir"))
   (test-input splitdrive "\\\\host-name\\share-name\\dir" '("\\\\host-name\\share-name" . "\\dir"))
-  (test-input splitdrive "dir1\\dir2" '("" . "dir1\\dir2")))
+  (test-input splitdrive "dir1\\dir2" '("" . "dir1\\dir2"))
+  (test-input splitdrive "\\\\host-name\\share-name\\" '("\\\\host-name\\share-name" . "\\"))
+  (test-input splitdrive "\\\\host-name\\share-name" '("\\\\host-name\\share-name" . "")))
 
 
 (subtest "Test split"

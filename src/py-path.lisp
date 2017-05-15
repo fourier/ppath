@@ -31,17 +31,10 @@
    splitunc
    walk))
 
+
 (in-package py.path)
 ;;(proclaim '(optimize (safety 0) (speed 3)))
 (proclaim '(optimize (safety 3) (speed 0) (debug 3)))
-
-(define-constant +separator-char+
-  #+windows #\\
-  #-windows #\/)
-
-(define-constant +separator-str+
-  #+windows "\\"
-  #-windows "/")
 
 (defun empty (str)
   "Returns t if the string is empty"
