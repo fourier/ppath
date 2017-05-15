@@ -1,8 +1,16 @@
 (defpackage py.path.details.nt
   (:use :cl :alexandria)
+  (:shadowing-import-from py.path.details.generic
+                          empty)
   (:export splitdrive
            split
-           splitunc))
+           splitunc
+           isabs
+           normcase
+           basename
+           dirname
+           islink
+           ismount))
 
 (in-package py.path.details.nt)
 
@@ -84,7 +92,7 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
   "Return t if the path is absolute."
   (destructuring-bind (drive . p) (splitdrive path)
     (declare (ignore drive))
-    (and (> (length p) 0)
+    (and (not (empty p))
          (let ((c (char p 0)))
            (or (char= c #\\) (char= c #\/))))))
 
@@ -102,3 +110,23 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 (defun dirname (path)
   "Returns directory portion of path"
   (car (split path)))
+
+
+(defun islink (path)
+  "Test if the path is a symbolic link. Returs falso on Win32"
+  (declare (ignore path))
+  nil)
+
+
+(defun ismount (path)
+  "Test if the path is a mount point. For local paths it should be
+absolute path, for UNC it should be mount point of the host"
+  (destructuring-bind (unc . p) (splitunc path)
+    (if (not (empty unc))
+        (or (empty p)
+            (string= p "/")
+            (string= p "\\"))
+        (destructuring-bind (drive . p) (splitdrive path)
+          (declare (ignore drive))
+          (or (string= p "/")
+              (string= p "\\"))))))

@@ -61,7 +61,12 @@
   (test-input splitunc "\\\\host-name\\\\share-name\\Sources\\lisp"
               '("" . "\\\\host-name\\\\share-name\\Sources\\lisp"))
   (test-input splitunc "//host-name//share-name/Sources/lisp"
-              '("" . "//host-name//share-name/Sources/lisp")))
+              '("" . "//host-name//share-name/Sources/lisp"))
+  (test-input splitunc "//host-name/share-name"
+              '("//host-name/share-name" . ""))
+  (test-input splitunc "//host-name/share-name/"
+              '("//host-name/share-name" . "/")))
+
 
 
 (subtest "Test isabs"
