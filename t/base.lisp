@@ -14,7 +14,7 @@
 ;; change type of the reporter to Test Anything Protocol
 (setf prove:*default-reporter* :tap)
 
-(defvar *test-data-path* (fad:merge-pathnames-as-directory (asdf:system-relative-pathname :git-api-test #P"t/") #P"data/"))
+(defvar *test-data-path* (fad:merge-pathnames-as-directory (asdf:system-relative-pathname :pypath-test #P"t/") #P"data/"))
 
 (defun testfile (filename)
   (merge-pathnames filename *test-data-path*))
