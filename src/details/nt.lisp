@@ -67,7 +67,7 @@ If the head is a drive name, the slashes are not stripped from it."
                            drive
                            (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
               tail)))))
- 
+
 
 (defun splitunc (path)
   "Split a pathname with UNC path. UNC syntax:
@@ -76,16 +76,27 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
   (let ((norm (posixify path))
 		pos
 		pos1)
-	(if (and (starts-with-subseq +unc-prefix+ norm) ;; paths starting with "//"
-			 (setq pos (position +posix-separator+ norm :start 2)) ;; second '/' exists
-			 (/= pos 2)	;; and it is not 3 in the row at the beginning
-			 (setq pos1 (position +posix-separator+ norm :start (1+ pos))) ;; directory component exists
-			 (/= (1+ pos) pos1)) ;; and it is not not 2 slashes in the second component
-		;; extract the path around this last slash
-		(cons (subseq path 0 pos1)
-			  (subseq path pos1))
-		;; otherwise head is empty but tail is the path given
-		(cons "" path))))
+	(when (not (starts-with-subseq +unc-prefix+ norm))
+	  ;; paths must start with "//"
+	  (return-from splitunc (cons "" path)))
+	(unless (setq pos (position +posix-separator+ norm :start 2))
+	  ;; second '/' must exists
+	  (return-from splitunc (cons "" path)))
+	(when (= pos 2)
+	  ;; and it is not 3 in the row at the beginning
+	  (return-from splitunc (cons "" path)))
+	;; if directory component exists
+	(cond ((and (setq pos1 (position +posix-separator+ norm :start (1+ pos)))
+				(/= (1+ pos) pos1)) ;; and it is not not 2 slashes in the second component
+		   ;; extract the path around this last slash
+		   (cons (subseq path 0 pos1)
+				 (subseq path pos1)))
+		  ((not pos1)					; no directory component exist, return unc
+		   (cons path ""))
+		  (t 
+		   ;; otherwise head is empty but tail is the path given
+		   (cons "" path)))))
+
 
 
 (defun isabs (path)
@@ -130,3 +141,7 @@ absolute path, for UNC it should be mount point of the host"
           (declare (ignore drive))
           (or (string= p "/")
               (string= p "\\"))))))
+
+
+(defun join (path &rest paths)
+  t)

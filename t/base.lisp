@@ -27,11 +27,16 @@
 	;;   :test #'equal
   ;;     "Testing input: 'C:\\'"))
   (let ((inp-string
-         (format nil "Testing input: '~a'" inp)))
-    `(is (,fun ,inp)
-         ,out
-         :test #'equal
-         ,inp-string)))
+         (format nil "Testing input: ~s" inp)))
+    (if (listp inp)
+        `(is (apply #',fun ,inp)
+             ,out
+             :test #'equal
+             ,inp-string)
+        `(is (,fun ,inp)
+             ,out
+             :test #'equal
+             ,inp-string))))
 
 
 (defmethod random-shufflef ((container list))

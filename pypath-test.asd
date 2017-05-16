@@ -18,6 +18,7 @@
   :author "Alexey Veretennikov"
   :license "BSD"
   :depends-on (:pypath
+               :alexandria
                :prove)
   :components ((:module "t"
                 :components

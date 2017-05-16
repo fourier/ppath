@@ -5,6 +5,7 @@
 (in-package :cl-user)
 (defpackage py.path.test.nt-test
   (:use :cl
+		:alexandria
         :py.path.details.nt
         :pypath.test.base
         :prove)
@@ -15,10 +16,9 @@
                           isabs
                           normcase
                           basename
-                          dirname))
+                          dirname
+						  join))
 (in-package :py.path.test.nt-test)
-
-;;(shadowing-import 'py.path.details.nt::splitdrive)
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
 
@@ -90,5 +90,74 @@
 (subtest "Test dirname"
   (test-input dirname "C:\\dir\\file.txt" "C:\\dir"))
 
+
+(subtest "Test ismount"
+  (test-input ismount "C:\\dir\\file.txt" nil)
+  (test-input ismount "\\\\host-name\\share-name" t)
+  (test-input ismount "//host-name/share-name" t)
+  (test-input ismount "//host-name/share-name/" t)
+  (test-input ismount "//host-name/share-name/dir" nil)
+  (test-input ismount "local-path\\dir" nil))
+ 
+
+(subtest "Test join"
+  (test-input join "" "")
+  (test-input join '("" "" "") "")
+  (test-input join '("a") "a")
+  (test-input join '("/a") "/a")
+  (test-input join '("\\a") "\\a")
+  (test-input join '("a:") "a:")
+  (test-input join '("a:" "\\b") "a:\\b")
+  (test-input join '("a" "\\b") "\\b")
+  (test-input join '("a" "b" "c") "a\\b\\c")
+  (test-input join '("a\\" "b" "c") "a\\b\\c")
+  (test-input join '("a" "b\\" "c") "a\\b\\c")
+  (test-input join '("a" "b" "\\c") "\\c")
+  (test-input join '("d:\\" "\\pleep") "d:\\pleep")
+  (test-input join '("d:\\" "a" "b") "d:\\a\\b")
+
+  (test-input join '("" "a") "a")
+  (test-input join '("" "" "" "" "a") "a")
+  (test-input join '("a" "") "a\\")
+  (test-input join '("a" "" "" "" "") "a\\")
+  (test-input join '("a\\" "") "a\\")
+  (test-input join '("a\\" "" "" "" "") "a\\")
+  (test-input join '("a/" "") "a/")
+
+  (test-input join '("a/b" "x/y") "a/b\\x/y")
+  (test-input join '("/a/b" "x/y") "/a/b\\x/y")
+  (test-input join '("/a/b/" "x/y") "/a/b/x/y")
+  (test-input join '("c:" "x/y") "c:x/y")
+  (test-input join '("c:a/b" "x/y") "c:a/b\\x/y")
+  (test-input join '("c:a/b/" "x/y") "c:a/b/x/y")
+  (test-input join '("c:/" "x/y") "c:/x/y")
+  (test-input join '("c:/a/b" "x/y") "c:/a/b\\x/y")
+  (test-input join '("c:/a/b/" "x/y") "c:/a/b/x/y")
+  (test-input join '("//computer/share" "x/y") "//computer/share\\x/y")
+  (test-input join '("//computer/share/" "x/y") "//computer/share/x/y")
+  (test-input join '("//computer/share/a/b" "x/y") "//computer/share/a/b\\x/y")
+
+  (test-input join '("a/b" "/x/y") "/x/y")
+  (test-input join '("/a/b" "/x/y") "/x/y")
+  (test-input join '("c:" "/x/y") "c:/x/y")
+  (test-input join '("c:a/b" "/x/y") "c:/x/y")
+  (test-input join '("c:/" "/x/y") "c:/x/y")
+  (test-input join '("c:/a/b" "/x/y") "c:/x/y")
+  (test-input join '("//computer/share" "/x/y") "//computer/share/x/y")
+  (test-input join '("//computer/share/" "/x/y") "//computer/share/x/y")
+  (test-input join '("//computer/share/a" "/x/y") "//computer/share/x/y")
+
+  (test-input join '("c:" "C:x/y") "C:x/y")
+  (test-input join '("c:a/b" "C:x/y") "C:a/b\\x/y")
+  (test-input join '("c:/" "C:x/y") "C:/x/y")
+  (test-input join '("c:/a/b" "C:x/y") "C:/a/b\\x/y")
+
+  (map-product (lambda (x y)
+				 (is (apply #'join (list x y))
+					 y
+					 :test #'equal
+					 (format nil "Testing combination: join (~s ~s) == ~s" x y y)))
+			   '("" "a/b" "/a/b" "c:" "c:a/b" "c:/" "c:/a/b")
+			   '("d:" "d:x/y" "d:/" "d:/x/y")))
 
 (finalize)
