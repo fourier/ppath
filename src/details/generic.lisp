@@ -1,9 +1,9 @@
 (defpackage py.path.details.generic
-  (:use :cl :alexandria))
+  (:use :cl :alexandria)
+  (:export getenv))
 
 (in-package py.path.details.generic)
 
-(defun empty (str)
-  "Returns t if the string is empty"
-  (or (not str)
-      (= (length str) 0)))
+(defun getenv (name)
+  "Get system environment variable value."
+  (osicat:environment-variable name))

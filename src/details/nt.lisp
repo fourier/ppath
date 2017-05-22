@@ -1,7 +1,7 @@
 (defpackage py.path.details.nt
   (:use :cl :alexandria)
-  (:shadowing-import-from py.path.details.generic
-                          empty)
+  ;; (:shadowing-import-from py.path.details.generic
+  ;;                         empty)
   (:export splitdrive
            split
            splitunc
@@ -10,7 +10,8 @@
            basename
            dirname
            islink
-           ismount))
+           ismount
+		   join))
 
 (in-package py.path.details.nt)
 
@@ -54,7 +55,7 @@ as a drive part."
 the last '/' and tail is after the last '/'.
 The slashes are stripped from the head and tail.
 If the head is a drive name, the slashes are not stripped from it."
-  (flet ((sep-p (c) (or (char= c #\\) (char= c #\/))))
+  (flet ((sep-p (c) (or (char= c +separator+) (char= c +posix-separator+))))
     (destructuring-bind (drive . p) (splitdrive path)
       (let* ((i (position-if #'sep-p p :from-end t)) ; position of the last slash
              (ni (if i (1+ i) 0))			   ; position after last slash
@@ -98,14 +99,25 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 		   (cons "" path)))))
 
 
+(defun starts-with-slash (path)
+  "Return t if the PATH starts with either forward or backward slash"
+  (and (> (length path) 0)
+	   (let ((c (char path 0)))
+		 (or (char= c +separator+) (char= c +posix-separator+)))))
+
+(defun ends-with-slash (path)
+  "Return t if the PATH ends with either forward or backward slash"
+  (and (> (length path) 0)
+	   (let ((c (last-elt path)))
+		 (or (char= c +separator+) (char= c +posix-separator+)))))
+
 
 (defun isabs (path)
   "Return t if the path is absolute."
   (destructuring-bind (drive . p) (splitdrive path)
     (declare (ignore drive))
-    (and (not (empty p))
-         (let ((c (char p 0)))
-           (or (char= c #\\) (char= c #\/))))))
+    (and (not (emptyp p))
+		 (starts-with-slash p))))
 
 
 (defun normcase (path)
@@ -133,8 +145,8 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
   "Test if the path is a mount point. For local paths it should be
 absolute path, for UNC it should be mount point of the host"
   (destructuring-bind (unc . p) (splitunc path)
-    (if (not (empty unc))
-        (or (empty p)
+    (if (not (emptyp unc))
+        (or (emptyp p)
             (string= p "/")
             (string= p "\\"))
         (destructuring-bind (drive . p) (splitdrive path)
@@ -144,4 +156,58 @@ absolute path, for UNC it should be mount point of the host"
 
 
 (defun join (path &rest paths)
-  t)
+  "Join paths provided, merging (if absolute) and
+inserting missing separators.
+Examples:
+  (join \"a/b\" \"x/y\")
+=> \"a/b\\\\x/y\"
+  (join \"c:\\\\hello\" \"world/test.txt\")
+=> \"c:\\\\hello\\\\world/test.txt\""
+  (destructuring-bind (drive1 . p1) (splitdrive path)
+	;; do iterations
+	;; when drive and path are not empty but path doesn't start wit slash
+	(destructuring-bind (drive . p)
+		(join-iter drive1 p1 paths)
+	  (if (and (not (emptyp p))
+			   (not (starts-with-slash p))
+			   (not (emptyp drive))
+			   (char/= (last-elt drive) #\:))
+		  (concatenate 'string drive (string +separator+) p)
+		  (concatenate 'string drive p)))))
+			 
+
+
+(defun join-iter (drive1 p1 paths)
+  "Helper function for recursive concatenation of paths.
+PATHS is a list of rest paths, drive1 and p1 split first path"
+  (flet ((samedrive (d1)
+		   (string= (normcase d1) (normcase drive1)))
+		 (concat-paths (p1 p2)
+		   (if (and (> (length p1) 0) (not (ends-with-slash p1)))
+			   (concatenate 'string p1 "\\" p2)
+			   (concatenate 'string p1 p2))))
+	(if (null paths)
+		(cons drive1 p1)	; degraded case
+		;; Normal case. get drive and path components of the each of paths	  
+		(destructuring-bind (drive . p) (splitdrive (car paths))
+		  ;; if this path is absolute or the original path is not absolute
+		  (cond ((and (starts-with-slash p)
+					  (or (not (emptyp drive))
+						  (emptyp drive1)))
+				 ;; continue iteration taking new drive				 
+				 (join-iter drive p (cdr paths)))
+				;; otherwise use original drive
+				((starts-with-slash p)
+				 (join-iter drive1 p (cdr paths)))
+				;; different drives, including unc
+				((and (not (emptyp drive))
+					  (not (string= drive drive1)) ; different drives
+					  (not (samedrive drive)))
+				 (join-iter drive p (cdr paths)))
+				((and (not (emptyp drive))
+					  (not (string= drive drive1))) ; different case of drives, use new
+				 (join-iter drive (concat-paths p1 p) (cdr paths)))
+				(t
+				 ;; relative paths, use old drive and concatenate paths as needed
+				 (join-iter drive1 (concat-paths p1 p) (cdr paths))))))))
+

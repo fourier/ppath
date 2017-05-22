@@ -23,6 +23,7 @@
                #:babel          ; bytes to string - MIT
                #:split-sequence ; general split - public domain
                #:cffi           ; to access dlls (libz) - MIT
+               #:osicat         ; access environment variables - MIT               
                #:static-vectors) ; to use common arrays between C and Lisp code - MIT
   :components ((:module "src"
 						:components

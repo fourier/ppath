@@ -113,7 +113,7 @@
   (test-input join '("a\\" "b" "c") "a\\b\\c")
   (test-input join '("a" "b\\" "c") "a\\b\\c")
   (test-input join '("a" "b" "\\c") "\\c")
-  (test-input join '("d:\\" "\\pleep") "d:\\pleep")
+  (test-input join '("d:\\" "\\a") "d:\\a")
   (test-input join '("d:\\" "a" "b") "d:\\a\\b")
 
   (test-input join '("" "a") "a")
@@ -133,9 +133,9 @@
   (test-input join '("c:/" "x/y") "c:/x/y")
   (test-input join '("c:/a/b" "x/y") "c:/a/b\\x/y")
   (test-input join '("c:/a/b/" "x/y") "c:/a/b/x/y")
-  (test-input join '("//computer/share" "x/y") "//computer/share\\x/y")
-  (test-input join '("//computer/share/" "x/y") "//computer/share/x/y")
-  (test-input join '("//computer/share/a/b" "x/y") "//computer/share/a/b\\x/y")
+  (test-input join '("//host-name/share-name" "x/y") "//host-name/share-name\\x/y")
+  (test-input join '("//host-name/share-name/" "x/y") "//host-name/share-name/x/y")
+  (test-input join '("//host-name/share-name/a/b" "x/y") "//host-name/share-name/a/b\\x/y")
 
   (test-input join '("a/b" "/x/y") "/x/y")
   (test-input join '("/a/b" "/x/y") "/x/y")
@@ -143,9 +143,9 @@
   (test-input join '("c:a/b" "/x/y") "c:/x/y")
   (test-input join '("c:/" "/x/y") "c:/x/y")
   (test-input join '("c:/a/b" "/x/y") "c:/x/y")
-  (test-input join '("//computer/share" "/x/y") "//computer/share/x/y")
-  (test-input join '("//computer/share/" "/x/y") "//computer/share/x/y")
-  (test-input join '("//computer/share/a" "/x/y") "//computer/share/x/y")
+  (test-input join '("//host-name/share-name" "/x/y") "//host-name/share-name/x/y")
+  (test-input join '("//host-name/share-name/" "/x/y") "//host-name/share-name/x/y")
+  (test-input join '("//host-name/share-name/a" "/x/y") "//host-name/share-name/x/y")
 
   (test-input join '("c:" "C:x/y") "C:x/y")
   (test-input join '("c:a/b" "C:x/y") "C:a/b\\x/y")
@@ -159,5 +159,41 @@
 					 (format nil "Testing combination: join (~s ~s) == ~s" x y y)))
 			   '("" "a/b" "/a/b" "c:" "c:a/b" "c:/" "c:/a/b")
 			   '("d:" "d:x/y" "d:/" "d:/x/y")))
+
+
+;; (subtest "Test expanduser"
+;;   (setf (osicat:environment-variable "HOME") "")
+  
+            ;; env.clear()
+            ;; tester('ntpath.expanduser("~test")', '~test')
+
+            ;; env['HOMEPATH'] = 'eric\\idle'
+            ;; env['HOMEDRIVE'] = 'C:\\'
+            ;; tester('ntpath.expanduser("~test")', 'C:\\eric\\test')
+            ;; tester('ntpath.expanduser("~")', 'C:\\eric\\idle')
+
+            ;; del env['HOMEDRIVE']
+            ;; tester('ntpath.expanduser("~test")', 'eric\\test')
+            ;; tester('ntpath.expanduser("~")', 'eric\\idle')
+
+            ;; env.clear()
+            ;; env['USERPROFILE'] = 'C:\\eric\\idle'
+            ;; tester('ntpath.expanduser("~test")', 'C:\\eric\\test')
+            ;; tester('ntpath.expanduser("~")', 'C:\\eric\\idle')
+
+            ;; env.clear()
+            ;; env['HOME'] = 'C:\\idle\\eric'
+            ;; tester('ntpath.expanduser("~test")', 'C:\\idle\\test')
+            ;; tester('ntpath.expanduser("~")', 'C:\\idle\\eric')
+
+            ;; tester('ntpath.expanduser("~test\\foo\\bar")',
+            ;;        'C:\\idle\\test\\foo\\bar')
+            ;; tester('ntpath.expanduser("~test/foo/bar")',
+            ;;        'C:\\idle\\test/foo/bar')
+            ;; tester('ntpath.expanduser("~\\foo\\bar")',
+            ;;        'C:\\idle\\eric\\foo\\bar')
+            ;; tester('ntpath.expanduser("~/foo/bar")',
+            ;;        'C:\\idle\\eric/foo/bar')
+;;)  
 
 (finalize)
