@@ -11,7 +11,9 @@
            dirname
            islink
            ismount
-		   join))
+           join
+           expanduser
+           expandvars))
 
 (in-package py.path.details.nt)
 
@@ -169,16 +171,16 @@ Examples:
   (join \"c:\\\\hello\" \"world/test.txt\")
 => \"c:\\\\hello\\\\world/test.txt\""
   (destructuring-bind (drive1 . p1) (splitdrive path)
-	;; do iterations
-	;; when drive and path are not empty but path doesn't start wit slash
-	(destructuring-bind (drive . p)
-		(join-iter drive1 p1 paths)
-	  (if (and (not (emptyp p))
-			   (not (starts-with-slash p))
-			   (not (emptyp drive))
-			   (char/= (last-elt drive) #\:))
-		  (concat drive (string +separator+) p)
-		  (concat drive p)))))
+    ;; do iterations
+    ;; when drive and path are not empty but path doesn't start wit slash
+    (destructuring-bind (drive . p)
+        (join-iter drive1 p1 paths)
+      (if (and (not (emptyp p))
+               (not (starts-with-slash p))
+               (not (emptyp drive))
+               (char/= (last-elt drive) #\:))
+          (concat drive (string +separator+) p)
+          (concat drive p)))))
 			 
 
 
@@ -186,35 +188,35 @@ Examples:
   "Helper function for recursive concatenation of paths.
 PATHS is a list of rest paths, drive1 and p1 split first path"
   (flet ((samedrive (d1)
-		   (string= (normcase d1) (normcase drive1)))
-		 (concat-paths (p1 p2)
-		   (if (and (> (length p1) 0) (not (ends-with-slash p1)))
-			   (concat p1 "\\" p2)
-			   (concat p1 p2))))
-	(if (null paths)
-		(cons drive1 p1)	; degraded case
-		;; Normal case. get drive and path components of the each of paths	  
-		(destructuring-bind (drive . p) (splitdrive (car paths))
-		  ;; if this path is absolute or the original path is not absolute
-		  (cond ((and (starts-with-slash p)
-					  (or (not (emptyp drive))
-						  (emptyp drive1)))
-				 ;; continue iteration taking new drive				 
-				 (join-iter drive p (cdr paths)))
-				;; otherwise use original drive
-				((starts-with-slash p)
-				 (join-iter drive1 p (cdr paths)))
-				;; different drives, including unc
-				((and (not (emptyp drive))
-					  (not (string= drive drive1)) ; different drives
-					  (not (samedrive drive)))
-				 (join-iter drive p (cdr paths)))
-				((and (not (emptyp drive))
-					  (not (string= drive drive1))) ; different case of drives, use new
-				 (join-iter drive (concat-paths p1 p) (cdr paths)))
-				(t
-				 ;; relative paths, use old drive and concatenate paths as needed
-				 (join-iter drive1 (concat-paths p1 p) (cdr paths))))))))
+           (string= (normcase d1) (normcase drive1)))
+         (concat-paths (p1 p2)
+           (if (and (> (length p1) 0) (not (ends-with-slash p1)))
+               (concat p1 "\\" p2)
+               (concat p1 p2))))
+    (if (null paths)
+        (cons drive1 p1)	; degraded case
+        ;; Normal case. get drive and path components of the each of paths	  
+        (destructuring-bind (drive . p) (splitdrive (car paths))
+          ;; if this path is absolute or the original path is not absolute
+          (cond ((and (starts-with-slash p)
+                      (or (not (emptyp drive))
+                          (emptyp drive1)))
+                 ;; continue iteration taking new drive				 
+                 (join-iter drive p (cdr paths)))
+                ;; otherwise use original drive
+                ((starts-with-slash p)
+                 (join-iter drive1 p (cdr paths)))
+                ;; different drives, including unc
+                ((and (not (emptyp drive))
+                      (not (string= drive drive1)) ; different drives
+                      (not (samedrive drive)))
+                 (join-iter drive p (cdr paths)))
+                ((and (not (emptyp drive))
+                      (not (string= drive drive1))) ; different case of drives, use new
+                 (join-iter drive (concat-paths p1 p) (cdr paths)))
+                (t
+                 ;; relative paths, use old drive and concatenate paths as needed
+                 (join-iter drive1 (concat-paths p1 p) (cdr paths))))))))
 
 
 (defun expanduser (path)
@@ -222,29 +224,29 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
 ~ - home directory
 ~user - user's home directory"
   (unless (and (not (emptyp path))
-			   (char= (char path 0) #\~))
-	(return-from expanduser path))
+               (char= (char path 0) #\~))
+    (return-from expanduser path))
   ;; starts with ~. Let's find first after slash
   (let ((first-slash
-		 (or 
-		  (position-if #'separator-p path :start 1)
-		  (length path)))
-		(home
-		 (cond ((not (emptyp (getenv "HOME")))
-				(getenv "HOME"))
-			   ((not (emptyp (getenv "USERPROFILE")))
-				(getenv "USERPROFILE"))
-			   ;; no homepath variable - return original path
-			   ((emptyp (getenv "HOMEPATH"))
-				(return-from expanduser path))
-			   (t (join (or (getenv "HOMEDRIVE") "") (getenv "HOMEPATH"))))))
-	(concat
-	 ;; if the path starts with i.e. "~user", take the directory above current
-	 ;; user's home directory and use "user" instead of user's directory
-	 ;; i.e. C:\\Users\\alexeyv -> C:\\Users\\user
-	 (if (> first-slash 1) (join (dirname home) (subseq path 1 first-slash)) home)
-	 ;; and concatenate it with the rest of the path
-	 (subseq path first-slash))))
+         (or 
+          (position-if #'separator-p path :start 1)
+          (length path)))
+        (home
+         (cond ((not (emptyp (getenv "HOME")))
+                (getenv "HOME"))
+               ((not (emptyp (getenv "USERPROFILE")))
+                (getenv "USERPROFILE"))
+               ;; no homepath variable - return original path
+               ((emptyp (getenv "HOMEPATH"))
+                (return-from expanduser path))
+               (t (join (or (getenv "HOMEDRIVE") "") (getenv "HOMEPATH"))))))
+    (concat
+     ;; if the path starts with i.e. "~user", take the directory above current
+     ;; user's home directory and use "user" instead of user's directory
+     ;; i.e. C:\\Users\\alexeyv -> C:\\Users\\user
+     (if (> first-slash 1) (join (dirname home) (subseq path 1 first-slash)) home)
+     ;; and concatenate it with the rest of the path
+     (subseq path first-slash))))
 
 	
 (defun expandvars (path)
@@ -252,32 +254,63 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
 Variables could be written as $var, ${var}, %var%.
 The variables inside single quotes are not expanded,
 and $$ and %% translated to $ and % accordingly"
+  (declare (optimize (debug 3) (speed 0) (safety 3)))
   (unless (and (not (emptyp path))
-			   (or (find #\$ path)
-				   (find #\% path)))
-	(return-from expandvars path))
+               (or (find #\$ path)
+                   (find #\% path)))
+    (return-from expandvars path))
   (loop
-	 with res = ""
-	 with i = 0
-	 with len = (length path)
-	 while (< i len)
-	 for c = (char path i)
-	 do
-	   (macrolet ((acc (var &rest vars)
-					`(setf res (concat res ,var ,@vars))))
-		 (case c
-		   (#\'							; single quote
-			(let ((next-quote (position #\' path :start (1+ i))))
-			  (acc (subseq path i (1+ next-quote)))
-			  (setf i (if next-quote next-quote (1- len)))))
-		   (#\%
-		    ;; look for doubles: %%
-		    (if (and (< i (1- len)) (char= (char path (1+ i)) #\%))
-				(progn (acc c) (incf i))
-				(acc c)))
-		   (otherwise (acc c))))
-	   (incf i)
-	 finally (return res)))
+     with res = ""
+     with i = 0
+     with len = (length path)
+     with last = (1- len)
+     while (< i len)
+     for c = (char path i)
+     do
+       (macrolet ((acc (var &rest vars)
+                    `(setf res (concat res ,var ,@vars))))
+         (case c
+           (#\'							; single quote
+            (let ((next-quote (or (position #\' path :start (1+ i)) len)))
+              (acc (subseq path i (min (1+ next-quote) len)))
+              (setf i next-quote)))
+           (#\%
+            ;; look for doubles: %%
+            (if (and (< i last) (char= (char path (1+ i)) #\%))
+                (progn (acc c) (incf i))
+                ;; looking for next %
+                (let ((next-% (position #\% path :start (1+ i))))
+                  (if (not next-%)      ; not found, return all the rest
+                      (setf res (concat res (subseq path i))
+                            i last)
+                      ;; found
+                      (let ((var (subseq path (1+ i) next-%)))
+                        (acc (if (getenv var) (getenv var) (concat "%" var "%")))
+                        (setf i next-%))))))
+           (#\$
+            ;; look for doubles: $$
+            (cond ((and (< i last) (char= (char path (1+ i)) #\$))
+                   (acc c) (incf i))
+                  ;; looking for ${var} constructions
+                  ((and (< i last) (char= (char path (1+ i)) #\{))
+                   (if-let (end-of-var (position #\} path :start (+ 2 i)))
+                     ;; extract variable from {}
+                     (let ((var (subseq path (+ 2 i) end-of-var)))
+                       (acc (if (getenv var) (getenv var) (concat "$" var)))
+                       (setf i  end-of-var))
+                     ;; no closing "}" found
+                     (setf res (concat res (subseq path i)) 
+                           i last)))
+                  ;; all other cases: $var and alike
+                  (t                    
+                   (let* ((end-of-var (or (position-if-not #'alphanumericp path :start (1+ i)) len))
+                          (var (subseq path (1+ i) end-of-var)))
+                     (acc (if (getenv var) (getenv var) (concat "$" var)))
+                     (setf i (1- end-of-var))))))
+           ;; not special character, just accumulate it
+           (otherwise (acc c))))
+       (incf i)
+     finally (return res)))
 	   
 
 
