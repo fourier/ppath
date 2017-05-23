@@ -19,6 +19,7 @@
   :license "BSD"
   :depends-on (:pypath
                :alexandria
+               :cl-fad
                :prove)
   :components ((:module "t"
                 :components

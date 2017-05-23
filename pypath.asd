@@ -17,14 +17,7 @@
   :version "0.1"
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
-  :depends-on (#:alexandria     ; general utilities - Public domain
-               #:cl-fad         ; files manipulation - BSD
-               #:cl-ppcre       ; portable regular expressions - BSD
-               #:babel          ; bytes to string - MIT
-               #:split-sequence ; general split - public domain
-               #:cffi           ; to access dlls (libz) - MIT
-               #:osicat         ; access environment variables - MIT               
-               #:static-vectors) ; to use common arrays between C and Lisp code - MIT
+  :depends-on (#:alexandria)     ; general utilities - Public domain
   :components ((:module "src"
 						:components
 						((:module "details"

@@ -17,7 +17,9 @@
                           normcase
                           basename
                           dirname
-						  join))
+						  join
+						  expanduser
+						  expandvars))
 (in-package :py.path.test.nt-test)
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
@@ -161,39 +163,86 @@
 			   '("d:" "d:x/y" "d:/" "d:/x/y")))
 
 
-;; (subtest "Test expanduser"
-;;   (setf (osicat:environment-variable "HOME") "")
-  
-            ;; env.clear()
-            ;; tester('ntpath.expanduser("~test")', '~test')
+(subtest "Test expanduser"
+  ;; environment - hash table containing "mocked" environment vars
+  (let ((env-vars (make-hash-table :test #'equalp)))
+	;; quickly set mocked environ variable 
+	(flet ((env (x y) (setf (gethash x env-vars) y))
+		   (unenv (x) (remhash x env-vars)))
+	  ;; mock the getenv function 
+	  (with-mocked-function (py.path.details.generic::getenv
+							 (lambda (name) (gethash name env-vars)))
+		(clrhash env-vars)
+		(test-input expanduser "~test" "~test")
+		(env "HOMEPATH" "users\\dir")
+		(env "HOMEDRIVE" "C:\\")
+		(test-input expanduser "~test" "C:\\users\\test")
+		(test-input expanduser "~" "C:\\users\\dir")
+		
+		(unenv "HOMEDRIVE")
+		(test-input expanduser "~test" "users\\test")
+		(test-input expanduser "~" "users\\dir")
 
-            ;; env['HOMEPATH'] = 'eric\\idle'
-            ;; env['HOMEDRIVE'] = 'C:\\'
-            ;; tester('ntpath.expanduser("~test")', 'C:\\eric\\test')
-            ;; tester('ntpath.expanduser("~")', 'C:\\eric\\idle')
+		(clrhash env-vars)
+		(env "USERPROFILE" "C:\\users\\dir")
+		(test-input expanduser "~test" "C:\\users\\test")
+		(test-input expanduser "~" "C:\\users\\dir")
 
-            ;; del env['HOMEDRIVE']
-            ;; tester('ntpath.expanduser("~test")', 'eric\\test')
-            ;; tester('ntpath.expanduser("~")', 'eric\\idle')
+		(clrhash env-vars)
+		(env "HOME" "C:\\dir\\users")
+		(test-input expanduser "~test" "C:\\dir\\test")
+		(test-input expanduser "~" "C:\\dir\\users")
 
-            ;; env.clear()
-            ;; env['USERPROFILE'] = 'C:\\eric\\idle'
-            ;; tester('ntpath.expanduser("~test")', 'C:\\eric\\test')
-            ;; tester('ntpath.expanduser("~")', 'C:\\eric\\idle')
+		(test-input expanduser "~test\\foo\\bar" 
+					"C:\\dir\\test\\foo\\bar")
+		(test-input expanduser "~test/foo/bar" 
+					"C:\\dir\\test/foo/bar")
+		(test-input expanduser "~\\foo\\bar" 
+					"C:\\dir\\users\\foo\\bar")
+		(test-input expanduser "~/foo/bar" 
+					"C:\\dir\\users/foo/bar")))))
 
-            ;; env.clear()
-            ;; env['HOME'] = 'C:\\idle\\eric'
-            ;; tester('ntpath.expanduser("~test")', 'C:\\idle\\test')
-            ;; tester('ntpath.expanduser("~")', 'C:\\idle\\eric')
+;; TODO: move to generic test
+(subtest "Test unicode"
+  (test-input join '("C:\\Users\myuser" "Мои документы")
+			  "C:\\Users\myuser\\Мои документы")
+  (test-input split "C:\\Users\myuser\\Мои документы"
+			  '("C:\\Users\myuser" . "Мои документы")))
 
-            ;; tester('ntpath.expanduser("~test\\foo\\bar")',
-            ;;        'C:\\idle\\test\\foo\\bar')
-            ;; tester('ntpath.expanduser("~test/foo/bar")',
-            ;;        'C:\\idle\\test/foo/bar')
-            ;; tester('ntpath.expanduser("~\\foo\\bar")',
-            ;;        'C:\\idle\\eric\\foo\\bar')
-            ;; tester('ntpath.expanduser("~/foo/bar")',
-            ;;        'C:\\idle\\eric/foo/bar')
-;;)  
+
+#+nil (subtest "Test expandvars"
+  ;; environment - hash table containing "mocked" environment vars
+  (let ((env-vars (make-hash-table :test #'equalp)))
+	;; quickly set mocked environ variable 
+	(flet ((env (x y) (setf (gethash x env-vars) y))
+		   (unenv (x) (remhash x env-vars)))
+	  ;; mock the getenv function 
+	  (with-mocked-function (py.path.details.generic::getenv
+							 (lambda (name) (gethash name env-vars)))
+		(clrhash env-vars)
+		(env "foo" "bar")
+		(env "{foo" "baz1")
+		(env "{foo}" "baz2")
+		(test-input expandvars "foo" "foo")
+		(test-input expandvars "$foo bar" "bar bar")
+		(test-input expandvars "${foo}bar" "barbar")
+		(test-input expandvars "$[foo]bar" "$[foo]bar")
+		(test-input expandvars "$bar bar" "$bar bar")
+		(test-input expandvars "$?bar" "$?bar")
+		(test-input expandvars "$foo}bar" "bar}bar")
+		(test-input expandvars "${foo" "${foo")
+		(test-input expandvars "${{foo}}" "baz1}")
+		(test-input expandvars "$foo$foo" "barbar")
+		(test-input expandvars "$bar$bar" "$bar$bar")
+		(test-input expandvars "%foo% bar" "bar bar")
+		(test-input expandvars "%foo%bar" "barbar")
+		(test-input expandvars "%foo%%foo%" "barbar")
+		(test-input expandvars "%%foo%%foo%foo%" "%foo%foobar")
+		(test-input expandvars "%?bar%" "%?bar%")
+		(test-input expandvars "%foo%%bar" "bar%bar")
+		(test-input expandvars "\'%foo%\'%bar" "\'%foo%\'%bar")
+		(test-input expandvars "bar\'%foo%" "bar\'%foo%")))))
+
+
 
 (finalize)

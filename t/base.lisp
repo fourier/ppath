@@ -5,7 +5,7 @@
 (defpackage pypath.test.base
   (:use :cl
         :prove)
-  (:export testfile test-input random-shuffle random-shufflef))
+  (:export testfile test-input with-mocked-function random-shuffle random-shufflef))
    
 (in-package :pypath.test.base)
 
@@ -37,6 +37,22 @@
              ,out
              :test #'equal
              ,inp-string))))
+
+
+(defmacro with-mocked-function ((old new) &body body)
+  "Execute body with replacing function OLD to NEW.
+Example:
+(with-replaced-function 'mypackage::myfun (lambda (x) 123)
+                        (mypackage::myfun))
+=> 123
+"
+  (let ((oldf (gensym))
+        (result (gensym)))
+    `(let ((,oldf (symbol-function ',old)))
+       (setf (symbol-function ',old) ,new)
+       (let ((,result (progn ,@body)))
+         (setf (symbol-function ',old) ,oldf)
+         ,result))))
 
 
 (defmethod random-shufflef ((container list))

@@ -1,7 +1,7 @@
 (defpackage py.path.details.nt
   (:use :cl :alexandria)
-  ;; (:shadowing-import-from py.path.details.generic
-  ;;                         empty)
+  (:shadowing-import-from py.path.details.generic
+                          getenv concat)
   (:export splitdrive
            split
            splitunc
@@ -64,9 +64,8 @@ If the head is a drive name, the slashes are not stripped from it."
              (tail (subseq p ni))
              ;; position in the head of first non-separator
              (j (position-if-not #'sep-p head :from-end t))) 
-        (cons (concatenate 'string
-                           drive
-                           (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
+        (cons (concat drive
+					  (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
               tail)))))
 
 
@@ -98,12 +97,18 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 		   ;; otherwise head is empty but tail is the path given
 		   (cons "" path)))))
 
+(declaim (inline separator-p))
+(defun separator-p (c)
+  "Return t if C is a separator. C should be a character"
+  (or (char= c +separator+) (char= c +posix-separator+)))
+
 
 (defun starts-with-slash (path)
   "Return t if the PATH starts with either forward or backward slash"
   (and (> (length path) 0)
 	   (let ((c (char path 0)))
-		 (or (char= c +separator+) (char= c +posix-separator+)))))
+		 (separator-p c))))
+
 
 (defun ends-with-slash (path)
   "Return t if the PATH ends with either forward or backward slash"
@@ -172,8 +177,8 @@ Examples:
 			   (not (starts-with-slash p))
 			   (not (emptyp drive))
 			   (char/= (last-elt drive) #\:))
-		  (concatenate 'string drive (string +separator+) p)
-		  (concatenate 'string drive p)))))
+		  (concat drive (string +separator+) p)
+		  (concat drive p)))))
 			 
 
 
@@ -184,8 +189,8 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
 		   (string= (normcase d1) (normcase drive1)))
 		 (concat-paths (p1 p2)
 		   (if (and (> (length p1) 0) (not (ends-with-slash p1)))
-			   (concatenate 'string p1 "\\" p2)
-			   (concatenate 'string p1 p2))))
+			   (concat p1 "\\" p2)
+			   (concat p1 p2))))
 	(if (null paths)
 		(cons drive1 p1)	; degraded case
 		;; Normal case. get drive and path components of the each of paths	  
@@ -211,3 +216,70 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
 				 ;; relative paths, use old drive and concatenate paths as needed
 				 (join-iter drive1 (concat-paths p1 p) (cdr paths))))))))
 
+
+(defun expanduser (path)
+  "Expand paths starting with ~ and ~user.
+~ - home directory
+~user - user's home directory"
+  (unless (and (not (emptyp path))
+			   (char= (char path 0) #\~))
+	(return-from expanduser path))
+  ;; starts with ~. Let's find first after slash
+  (let ((first-slash
+		 (or 
+		  (position-if #'separator-p path :start 1)
+		  (length path)))
+		(home
+		 (cond ((not (emptyp (getenv "HOME")))
+				(getenv "HOME"))
+			   ((not (emptyp (getenv "USERPROFILE")))
+				(getenv "USERPROFILE"))
+			   ;; no homepath variable - return original path
+			   ((emptyp (getenv "HOMEPATH"))
+				(return-from expanduser path))
+			   (t (join (or (getenv "HOMEDRIVE") "") (getenv "HOMEPATH"))))))
+	(concat
+	 ;; if the path starts with i.e. "~user", take the directory above current
+	 ;; user's home directory and use "user" instead of user's directory
+	 ;; i.e. C:\\Users\\alexeyv -> C:\\Users\\user
+	 (if (> first-slash 1) (join (dirname home) (subseq path 1 first-slash)) home)
+	 ;; and concatenate it with the rest of the path
+	 (subseq path first-slash))))
+
+	
+(defun expandvars (path)
+  "Expand environment variables in the path.
+Variables could be written as $var, ${var}, %var%.
+The variables inside single quotes are not expanded,
+and $$ and %% translated to $ and % accordingly"
+  (unless (and (not (emptyp path))
+			   (or (find #\$ path)
+				   (find #\% path)))
+	(return-from expandvars path))
+  (loop
+	 with res = ""
+	 with i = 0
+	 with len = (length path)
+	 while (< i len)
+	 for c = (char path i)
+	 do
+	   (macrolet ((acc (var &rest vars)
+					`(setf res (concat res ,var ,@vars))))
+		 (case c
+		   (#\'							; single quote
+			(let ((next-quote (position #\' path :start (1+ i))))
+			  (acc (subseq path i (1+ next-quote)))
+			  (setf i (if next-quote next-quote (1- len)))))
+		   (#\%
+		    ;; look for doubles: %%
+		    (if (and (< i (1- len)) (char= (char path (1+ i)) #\%))
+				(progn (acc c) (incf i))
+				(acc c)))
+		   (otherwise (acc c))))
+	   (incf i)
+	 finally (return res)))
+	   
+
+
+
+  
