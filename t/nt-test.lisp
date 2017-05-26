@@ -19,7 +19,8 @@
                           dirname
                           join
                           expanduser
-                          expandvars))
+                          expandvars
+                          normpath))
 (in-package :py.path.test.nt-test)
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
@@ -242,7 +243,44 @@
         (test-input expandvars "%?bar%" "%?bar%")
         (test-input expandvars "%foo%%bar" "bar%bar")
         (test-input expandvars "\'%foo%\'%bar" "\'%foo%\'%bar")
-        (test-input expandvars "bar\'%foo%" "bar\'%foo%")))))
+        (test-input expandvars "bar\'%foo%" "bar\'%foo%")
+        ;; some additional degraded/corner cases
+        (test-input expandvars "" "")
+        (test-input expandvars "'" "'")
+        (test-input expandvars "$" "$")
+        (test-input expandvars "%" "%")
+        (test-input expandvars "test'" "test'")
+        (test-input expandvars "test''" "test''")
+        (test-input expandvars "test$$" "test$")
+        (test-input expandvars "test%%" "test%")))))
+
+
+(subtest "Test normpath"
+  (test-input normpath "A//////././//.//B" "A\\B")
+  (test-input normpath "A/./B" "A\\B")
+  (test-input normpath "A/foo/../B" "A\\B")
+  (test-input normpath "C:A//B" "C:A\\B")
+  (test-input normpath "D:A/./B" "D:A\\B")
+  (test-input normpath "e:A/foo/../B" "e:A\\B")
+
+  (test-input normpath "C:///A//B" "C:\\A\\B")
+  (test-input normpath "D:///A/./B" "D:\\A\\B")
+  (test-input normpath "e:///A/foo/../B" "e:\\A\\B")
+
+  (test-input normpath ".." "..")
+  (test-input normpath "." ".")
+  (test-input normpath "" ".")
+  (test-input normpath "/" "\\")
+  (test-input normpath "c:/" "c:\\")
+  (test-input normpath "/../.././.." "\\")
+  (test-input normpath "c:/../../.." "c:\\")
+  (test-input normpath "../.././.." "..\\..\\..")
+  (test-input normpath "K:../.././.." "K:..\\..\\..")
+  (test-input normpath "C:////a/b" "C:\\a\\b")
+  (test-input normpath "//machine/share//a/b" "\\\\machine\\share\\a\\b")
+
+  (test-input normpath "\\\\.\\NUL" "\\\\.\\NUL")
+  (test-input normpath "\\\\?\\D:/XY\\Z" "\\\\?\\D:/XY\\Z"))
 
 
 

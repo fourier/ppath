@@ -17,16 +17,17 @@
   :version "0.1"
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
-  :depends-on (#:alexandria)     ; general utilities - Public domain
+  :depends-on (#:alexandria            ; general utilities - Public domain
+               #:split-sequence)       ; general split - public domain
   :components ((:module "src"
-						:components
-						((:module "details"
-								  :serial t
-								  :components
-								  ((:file "generic")
-								   (:file "nt")
-								   (:file "posix")))
-						 (:file "py-path"))))
+                        :components
+                        ((:module "details"
+                                  :serial t
+                                  :components
+                                  ((:file "generic")
+                                   (:file "nt")
+                                   (:file "posix")))
+                         (:file "py-path"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description
   #.(with-open-file (stream (merge-pathnames

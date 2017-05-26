@@ -13,7 +13,8 @@
            ismount
            join
            expanduser
-           expandvars))
+           expandvars
+           normpath))
 
 (in-package py.path.details.nt)
 
@@ -26,6 +27,11 @@
 (defun posixify (path)
   "Replaces '\\' with '/' in path"
   (substitute +posix-separator+ +separator+ path))
+
+(defun windowsify (path)
+  "Replaces '/' with '\\\' in path"
+  (substitute +separator+ +posix-separator+ path))
+
 
 (defun splitdrive (path)
   "Split a path to the drive (with letter) and path after drive.
@@ -40,11 +46,11 @@ as a drive part."
            (cons (subseq path 0 2)
                  (subseq path 2)))
           ((starts-with-subseq +unc-prefix+ norm) ; paths starting with "//"
-		   ;; find first slash position after the prefix (like \\host\sharename)
+           ;; find first slash position after the prefix (like \\host\sharename)
            (if-let ((pos (position +posix-separator+ norm :start 2)))
-			 ;; if found, find the next slash position (like \\host\sharename\dir)
-			 (if-let ((pos1 (position +posix-separator+ norm :start (1+ pos))))
-			   ;; extract the path around this last slash
+             ;; if found, find the next slash position (like \\host\sharename\dir)
+             (if-let ((pos1 (position +posix-separator+ norm :start (1+ pos))))
+               ;; extract the path around this last slash
                  (cons (subseq path 0 pos1)
                        (subseq path pos1))
                  (cons path ""))
@@ -60,14 +66,14 @@ If the head is a drive name, the slashes are not stripped from it."
   (flet ((sep-p (c) (or (char= c +separator+) (char= c +posix-separator+))))
     (destructuring-bind (drive . p) (splitdrive path)
       (let* ((i (position-if #'sep-p p :from-end t)) ; position of the last slash
-             (ni (if i (1+ i) 0))			   ; position after last slash
+             (ni (if i (1+ i) 0))              ; position after last slash
              ;; split to head and tail at the position after the last slash
              (head (subseq p 0 ni))
              (tail (subseq p ni))
              ;; position in the head of first non-separator
              (j (position-if-not #'sep-p head :from-end t))) 
         (cons (concat drive
-					  (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
+                      (if (and j (> j 0)) (subseq head 0 (1+ j)) head))
               tail)))))
 
 
@@ -76,28 +82,28 @@ If the head is a drive name, the slashes are not stripped from it."
 \\\\host-name\\share-name\\file_path
 Return a cons pair (\\\\host-name\\share-name . \\file_path)"
   (let ((norm (posixify path))
-		pos
-		pos1)
-	(when (not (starts-with-subseq +unc-prefix+ norm))
-	  ;; paths must start with "//"
-	  (return-from splitunc (cons "" path)))
-	(unless (setq pos (position +posix-separator+ norm :start 2))
-	  ;; second '/' must exists
-	  (return-from splitunc (cons "" path)))
-	(when (= pos 2)
-	  ;; and it is not 3 in the row at the beginning
-	  (return-from splitunc (cons "" path)))
-	;; if directory component exists
-	(cond ((and (setq pos1 (position +posix-separator+ norm :start (1+ pos)))
-				(/= (1+ pos) pos1)) ;; and it is not not 2 slashes in the second component
-		   ;; extract the path around this last slash
-		   (cons (subseq path 0 pos1)
-				 (subseq path pos1)))
-		  ((not pos1)					; no directory component exist, return unc
-		   (cons path ""))
-		  (t 
-		   ;; otherwise head is empty but tail is the path given
-		   (cons "" path)))))
+        pos
+        pos1)
+    (when (not (starts-with-subseq +unc-prefix+ norm))
+      ;; paths must start with "//"
+      (return-from splitunc (cons "" path)))
+    (unless (setq pos (position +posix-separator+ norm :start 2))
+      ;; second '/' must exists
+      (return-from splitunc (cons "" path)))
+    (when (= pos 2)
+      ;; and it is not 3 in the row at the beginning
+      (return-from splitunc (cons "" path)))
+    ;; if directory component exists
+    (cond ((and (setq pos1 (position +posix-separator+ norm :start (1+ pos)))
+                (/= (1+ pos) pos1)) ;; and it is not not 2 slashes in the second component
+           ;; extract the path around this last slash
+           (cons (subseq path 0 pos1)
+                 (subseq path pos1)))
+          ((not pos1)                   ; no directory component exist, return unc
+           (cons path ""))
+          (t 
+           ;; otherwise head is empty but tail is the path given
+           (cons "" path)))))
 
 (declaim (inline separator-p))
 (defun separator-p (c)
@@ -108,15 +114,15 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 (defun starts-with-slash (path)
   "Return t if the PATH starts with either forward or backward slash"
   (and (> (length path) 0)
-	   (let ((c (char path 0)))
-		 (separator-p c))))
+       (let ((c (char path 0)))
+         (separator-p c))))
 
 
 (defun ends-with-slash (path)
   "Return t if the PATH ends with either forward or backward slash"
   (and (> (length path) 0)
-	   (let ((c (last-elt path)))
-		 (or (char= c +separator+) (char= c +posix-separator+)))))
+       (let ((c (last-elt path)))
+         (or (char= c +separator+) (char= c +posix-separator+)))))
 
 
 (defun isabs (path)
@@ -124,7 +130,7 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
   (destructuring-bind (drive . p) (splitdrive path)
     (declare (ignore drive))
     (and (not (emptyp p))
-		 (starts-with-slash p))))
+         (starts-with-slash p))))
 
 
 (defun normcase (path)
@@ -143,7 +149,7 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 
 
 (defun islink (path)
-  "Test if the path is a symbolic link. Returs falso on Win32"
+  "Test if the path is a symbolic link. Returns false on Win32"
   (declare (ignore path))
   nil)
 
@@ -181,7 +187,7 @@ Examples:
                (char/= (last-elt drive) #\:))
           (concat drive (string +separator+) p)
           (concat drive p)))))
-			 
+             
 
 
 (defun join-iter (drive1 p1 paths)
@@ -194,14 +200,14 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
                (concat p1 "\\" p2)
                (concat p1 p2))))
     (if (null paths)
-        (cons drive1 p1)	; degraded case
-        ;; Normal case. get drive and path components of the each of paths	  
+        (cons drive1 p1)    ; degraded case
+        ;; Normal case. get drive and path components of the each of paths    
         (destructuring-bind (drive . p) (splitdrive (car paths))
           ;; if this path is absolute or the original path is not absolute
           (cond ((and (starts-with-slash p)
                       (or (not (emptyp drive))
                           (emptyp drive1)))
-                 ;; continue iteration taking new drive				 
+                 ;; continue iteration taking new drive              
                  (join-iter drive p (cdr paths)))
                 ;; otherwise use original drive
                 ((starts-with-slash p)
@@ -248,7 +254,7 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
      ;; and concatenate it with the rest of the path
      (subseq path first-slash))))
 
-	
+    
 (defun expandvars (path)
   "Expand environment variables in the path.
 Variables could be written as $var, ${var}, %var%.
@@ -270,7 +276,7 @@ and $$ and %% translated to $ and % accordingly"
        (macrolet ((acc (var &rest vars)
                     `(setf res (concat res ,var ,@vars))))
          (case c
-           (#\'							; single quote
+           (#\'                         ; single quote
             (let ((next-quote (or (position #\' path :start (1+ i)) len)))
               (acc (subseq path i (min (1+ next-quote) len)))
               (setf i next-quote)))
@@ -311,8 +317,54 @@ and $$ and %% translated to $ and % accordingly"
            (otherwise (acc c))))
        (incf i)
      finally (return res)))
-	   
+       
+
+(defun normpath (path)
+  "Normalize path, removing unnecessary/redundant parts.
+Example: convert paths like A//B to A\B, A/./B => A\B etc"
+  ;; special handling of paths with prefixes \\.\ and \\?\ 
+  ;; don't do anything
+  (when (or (starts-with-subseq "\\\\.\\" path)
+            (starts-with-subseq "\\\\?\\" path))
+    (return-from normpath path))
+  ;; replate / -> \ 
+  (let ((normpath (windowsify path)))
+    (destructuring-bind (d . p) (splitdrive normpath)
+      (let* ((drive
+              (cond ((and (not (emptyp d)) (starts-with-slash p))
+                     (concat d (string +separator+))) ; path starts with slash, add slash to drive
+                    ((and (emptyp d) (starts-with-slash p)) ;; save initial slashes in path if drive is ''
+                     (coerce (loop for c across p
+                                   while (char= c +separator+)
+                                   collect c) 'string))
+                    (t d)))
+             ;; split to path components and remove single dots like A/./B => A\B
+             (parts (remove-if (lambda (x) (or (emptyp x)
+                                               (string= "." x)))
+                               (split-sequence:split-sequence +separator+ p)))
+             (result ; join filtered paths with drive and '\'s
+              (format nil "~A~{~A~^\\~}" drive (nreverse (normpath-impl drive parts)))))
+        (if (not (emptyp result))
+            result ; we can't return empty result, so it is a dot
+            ".")))))
+      
+
+(defun normpath-impl (drive parts)
+  "Implementation of the normpath.
+DRIVE is a drive with appended slash if necessary,
+PARTS is a list of split parts without single dots"
+  ;; all path components are ".." and the path is relative, return as is
+  (if (and (every (curry #'string= "..") parts) (not (ends-with-slash drive)))
+      parts
+      ;; find paired dots like ..
+      (loop for i below (length parts)
+            for part = (nth i parts)
+            with result-parts = nil
+            do
+            ;; if the current part is .. - remove part above
+            (if (string= part "..")
+                (pop result-parts)
+                (push part result-parts))
+            finally (return result-parts))))
 
 
-
-  
