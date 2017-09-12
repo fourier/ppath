@@ -1,5 +1,5 @@
-;;;; attributes-test.lisp
-;; NOTE: To run this test file, execute `(asdf:test-system :git-api)' in your Lisp.
+;;;; nt-test.lisp
+;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
 ;;
 
 (in-package :cl-user)
@@ -9,6 +9,8 @@
         :py.path.details.nt
         :pypath.test.base
         :prove)
+  (:shadowing-import-from py.path.details.generic
+   concat)
   (:shadowing-import-from py.path.details.nt
                           split
                           splitdrive
@@ -20,7 +22,9 @@
                           join
                           expanduser
                           expandvars
-                          normpath))
+                          normpath
+                          relpath))
+
 (in-package :py.path.test.nt-test)
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
@@ -171,7 +175,7 @@
     (flet ((env (x y) (setf (gethash x env-vars) y))
            (unenv (x) (remhash x env-vars)))
       ;; mock the getenv function 
-      (with-mocked-function (py.path.details.generic::getenv
+      (with-mocked-function (uiop::getenv
                              (lambda (name) (gethash name env-vars)))
         (clrhash env-vars)
         (test-input expanduser "~test" "~test")
@@ -280,8 +284,44 @@
   (test-input normpath "//machine/share//a/b" "\\\\machine\\share\\a\\b")
 
   (test-input normpath "\\\\.\\NUL" "\\\\.\\NUL")
-  (test-input normpath "\\\\?\\D:/XY\\Z" "\\\\?\\D:/XY\\Z"))
+  (test-input normpath "\\\\?\\D:/XY\\Z" "\\\\?\\D:/XY\\Z")
+  (test-input normpath "b/../a" "a")
+  (test-input normpath "../b/../a" "..\\a")
+  (test-input normpath "..\\a\\b" "..\\a\\b")
+  (test-input normpath "../b" "..\\b"))
 
 
+(subtest "Test relpath"
+  (test-input relpath "a" "a")
+  (let ((abs (abspath "a")))
+    (test-input relpath abs "a"))
+  (test-input relpath "a/b" "a\\b")
+  (test-input relpath "../a/b" "..\\a\\b")
+
+  (let* ((tmppath (join (py.path.details.generic:get-temp-path)
+                        (format nil "@test_~d_tmp" (py.path.details.generic:getpid))))
+         (old-dir (py.path.details.generic::getcwd))
+         (currentdir (basename tmppath)))
+    ;; ensure-directories-exist requires trailing slash
+    (ensure-directories-exist (concat tmppath "/"))
+    (chdir (concat tmppath "/"))
+    (test-input relpath '("a" "../b") (concat "..\\" currentdir "\\a"))
+    (test-input relpath '("a/b" "../c") (concat "..\\" currentdir "\\a\\b"))
+    (chdir old-dir)
+    (uiop/filesystem:delete-empty-directory (pathname tmppath)))
+
+  (test-input relpath '("a" "b/c") "..\\..\\a")
+  (test-input relpath '("//conky/mountpoint/a" "//conky/mountpoint/b/c") "..\\..\\a")
+  (test-input relpath '("a" "a") ".")
+  (test-input relpath '("/foo/bar/bat" "/x/y/z") "..\\..\\..\\foo\\bar\\bat")
+  (test-input relpath '("/foo/bar/bat" "/foo/bar") "bat")
+  (test-input relpath '("/foo/bar/bat" "/") "foo\\bar\\bat")
+  (test-input relpath '("/" "/foo/bar/bat") "..\\..\\..")
+  (test-input relpath '("/foo/bar/bat" "/x") "..\\foo\\bar\\bat")
+  (test-input relpath '("/x" "/foo/bar/bat") "..\\..\\..\\x")
+  (test-input relpath '("/" "/") ".")
+  (test-input relpath '("/a" "/a") ".")
+  (test-input relpath '("/a/b" "/a/b") ".")
+  (test-input relpath '("c:/foo" "C:/FOO") "."))
 
 (finalize)

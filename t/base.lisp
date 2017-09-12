@@ -5,7 +5,7 @@
 (defpackage pypath.test.base
   (:use :cl
         :prove)
-  (:export testfile test-input with-mocked-function random-shuffle random-shufflef))
+  (:export testfile test-input with-mocked-function random-shuffle random-shufflef chdir))
    
 (in-package :pypath.test.base)
 
@@ -86,3 +86,18 @@ Example:
           do 
           (rotatef (aref result i) (aref result (random (+ i 1)))))
     result))
+
+
+#+(and mswindows lispworks)
+(fli:define-foreign-function (set-current-directory-w "SetCurrentDirectoryW")
+    ((lp-path-name win32:lpcwstr))
+  :result-type :int32
+  :language :ansi-c)
+
+
+(defun chdir (path)
+  "Change the current directory to PATH"
+  #+(and mswindows lispworks)
+  (set-current-directory-w (namestring path))
+  #-(and mswindows lispworks)
+    (uiop/os:chdir path))

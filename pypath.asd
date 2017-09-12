@@ -9,6 +9,8 @@
 |#
 
 (in-package :cl-user)
+
+
 (defpackage py.path-asd
   (:use :cl :asdf))
 (in-package :py.path-asd)
@@ -18,16 +20,22 @@
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
   :depends-on (#:alexandria            ; general utilities - Public domain
+               #:cffi                  ; to access dlls (kernel32) - MIT
+               #:uiop                  ; os operations like getcwd - MIT
                #:split-sequence)       ; general split - public domain
   :components ((:module "src"
-                        :components
-                        ((:module "details"
-                                  :serial t
-                                  :components
-                                  ((:file "generic")
-                                   (:file "nt")
-                                   (:file "posix")))
-                         (:file "py-path"))))
+                :serial t
+                :components
+                ((:module "details"
+                  :serial t
+                  :components
+                  (
+                   #+(or windows win32) (:file "nt-cffi")
+                   #-(or windows win32) (:file "unix-cffi")
+                   (:file "generic")
+                   (:file "nt")
+                   (:file "posix")))
+                 (:file "py-path"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description
   #.(with-open-file (stream (merge-pathnames

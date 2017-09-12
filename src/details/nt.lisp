@@ -1,7 +1,10 @@
 (defpackage py.path.details.nt
   (:use :cl :alexandria)
   (:shadowing-import-from py.path.details.generic
-                          getenv concat)
+                          path-error concat getcwd getenv)
+;;;   (:shadowing-import-from uiop
+;;;                           getenv)
+;;;    
   (:export splitdrive
            split
            splitunc
@@ -14,7 +17,11 @@
            join
            expanduser
            expandvars
-           normpath))
+           normpath
+           abspath
+           realpath
+           relpath
+           isdir))
 
 (in-package py.path.details.nt)
 
@@ -22,8 +29,10 @@
 (define-constant +posix-separator+ #\/)
 (define-constant +unc-prefix+ "//" :test #'equal)
 (define-constant +path-separator+ #\;)
+(define-constant +current-dir+ "." :test #'equal)
+(define-constant +up-dir+ ".." :test #'equal)
 
-
+  
 (defun posixify (path)
   "Replaces '\\' with '/' in path"
   (substitute +posix-separator+ +separator+ path))
@@ -327,7 +336,7 @@ Example: convert paths like A//B to A\B, A/./B => A\B etc"
   (when (or (starts-with-subseq "\\\\.\\" path)
             (starts-with-subseq "\\\\?\\" path))
     (return-from normpath path))
-  ;; replate / -> \ 
+  ;; replace / -> \ 
   (let ((normpath (windowsify path)))
     (destructuring-bind (d . p) (splitdrive normpath)
       (let* ((drive
@@ -340,31 +349,131 @@ Example: convert paths like A//B to A\B, A/./B => A\B etc"
                     (t d)))
              ;; split to path components and remove single dots like A/./B => A\B
              (parts (remove-if (lambda (x) (or (emptyp x)
-                                               (string= "." x)))
+                                               (string= +current-dir+ x)))
                                (split-sequence:split-sequence +separator+ p)))
              (result ; join filtered paths with drive and '\'s
               (format nil "~A~{~A~^\\~}" drive (nreverse (normpath-impl drive parts)))))
         (if (not (emptyp result))
             result ; we can't return empty result, so it is a dot
-            ".")))))
+            +current-dir+)))))
       
 
 (defun normpath-impl (drive parts)
   "Implementation of the normpath.
 DRIVE is a drive with appended slash if necessary,
 PARTS is a list of split parts without single dots"
-  ;; all path components are ".." and the path is relative, return as is
-  (if (and (every (curry #'string= "..") parts) (not (ends-with-slash drive)))
-      parts
-      ;; find paired dots like ..
-      (loop for i below (length parts)
-            for part = (nth i parts)
-            with result-parts = nil
-            do
-            ;; if the current part is .. - remove part above
-            (if (string= part "..")
-                (pop result-parts)
-                (push part result-parts))
+  (flet ((isup (dir)
+           (string= dir +up-dir+)))
+    ;; find paired dots like ..
+    (loop with result-parts = nil
+          for i below (length parts)
+          for part = (nth i parts)
+          do
+          (cond ((and (isup part) ;; current is .. 
+                      (or
+                       ;; no previous directory entry and the
+                       ;; path was absolute, for cases like c:/../b => b
+                       ;; just drop ..
+                       (and 
+                        (null (car result-parts))
+                        (ends-with-slash drive))
+                       ;; previous part was not .., drop it
+                       (and 
+                        (not (null (car result-parts)))
+                        (not (isup (car result-parts))))))
+                 (pop result-parts))
+                (t 
+                 (push part result-parts)))
             finally (return result-parts))))
 
 
+(defun abspath (path)
+  "Convert relative path to absolute. If path is absolute return it unchanged,
+if path is empty return current directory"
+  (if (emptyp path)
+      (getcwd)
+      #+windows
+      (if-let (result 
+               (py.path.details.nt.cffi:get-full-path-name path))
+          ;; strip special prefix from paths returned by windows function
+          ;; GetFullPathNameW
+          (if (starts-with-subseq "\\\\?\\" result)
+              (subseq result 4)
+              result)
+        (getcwd))
+      #-windows
+      ;; on other platforms just join 
+      (normpath 
+       (if (not (isabs path))
+           (join (getcwd) path)
+           path))))
+
+
+(defun realpath (path)
+  ;; on windows no symlinks support hence just return abspath
+  (abspath path))
+
+
+(defun relpath (path &optional (startdir "."))
+  "Return the relative version of the PATH.
+If STARTDIR specified, use this as a current directory to resolve against."
+  (unless (and path (> (length path) 0)) 
+    (error 'path-error :reason "no path specified" :function 'relpath))
+   (flet ((stror (arg1 arg2) (if (emptyp arg1) arg2 arg1)))
+     (let* ((abspath  (abspath (normpath path)))
+            (absstart (abspath (normpath startdir)))
+            (uncstart (splitunc absstart))
+            (uncpath  (splitunc abspath))
+            (drvstart (splitdrive absstart))
+            (drvpath  (splitdrive abspath)))
+      ;; check for mix unc and not-unc paths
+      (cond ((xor (emptyp (car uncstart))
+                  (emptyp (car uncpath)))
+             (format *standard-output* "Cannot mix UNC and non-UNC paths (~s and ~s)"
+                     path startdir)
+             (error 'path-error :reason (format nil "Cannot mix UNC and non-UNC paths (~s and ~s)"
+                                                path startdir)
+                    :function 'relpath))
+            ;; check if prefixes are different
+            ((not (string= (stror (string-downcase (car uncstart))
+                                  (string-downcase (car drvstart)))
+                           (stror (string-downcase (car uncpath))
+                                  (string-downcase (car drvpath)))))
+             (format *standard-output* "Different roots (~s and ~s)"
+                     path startdir)
+             (error 'path-error :reason (format nil "Different roots (~s and ~s)"
+                                                path startdir)
+                    :function 'relpath))
+            (t
+             ;; split the remainder of the start path and path to components
+             (let* ((start-parts
+                     (remove-if #'emptyp
+                                (split-sequence:split-sequence
+                                 +separator+
+                                 (cdr (if (emptyp (car uncstart)) drvstart uncstart)))))
+                    (path-parts
+                     (remove-if #'emptyp
+                                (split-sequence:split-sequence
+                                 +separator+
+                                 (cdr (if (emptyp (car uncpath)) drvpath uncpath)))))
+                    (i 
+                     ;; and find there they differ
+                     ;; i is the index of the path component where paths have diverged
+                     ;; or length of the components list if not diverged
+                     (or (mismatch start-parts path-parts
+                                   :test (lambda (x y)
+                                           (string= (string-downcase x) (string-downcase y))))
+                         (length start-parts)))
+                    ;; result list is all until diverged and relative path parts
+                    (result-list (append (make-list (- (length start-parts) i) :initial-element +up-dir+)
+                                         (subseq path-parts i))))
+               (if (not result-list) ; if no results just return dot
+                   +current-dir+
+                   (apply #'join result-list))))))))
+           
+      
+(defun isdir (path)
+  "Determines if the path is a directory"
+  (let ((FILE_ATTRIBUTE_DIRECTORY 16))
+    (= 
+     (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)))

@@ -17,17 +17,17 @@
 (defsystem pypath-test
   :author "Alexey Veretennikov"
   :license "BSD"
+  :description "Test system for pypath"
   :depends-on (:pypath
                :alexandria
                :cl-fad
-               :prove)
+               :prove
+               :prove-asdf)
+  :defsystem-depends-on (:prove-asdf)
   :components ((:module "t"
                 :components
                 ((:file "base")
 				 (:test-file "nt-test"))))
-  :description "Test system for pypath"
-
-  :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)
                     (funcall (intern #.(string :run) :prove) c)))
 
