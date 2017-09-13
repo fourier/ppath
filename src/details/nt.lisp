@@ -2,9 +2,6 @@
   (:use :cl :alexandria)
   (:shadowing-import-from py.path.details.generic
                           path-error concat getcwd getenv)
-;;;   (:shadowing-import-from uiop
-;;;                           getenv)
-;;;    
   (:export splitdrive
            split
            splitunc

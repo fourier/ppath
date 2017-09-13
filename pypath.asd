@@ -22,6 +22,7 @@
   :depends-on (#:alexandria            ; general utilities - Public domain
                #:cffi                  ; to access dlls (kernel32) - MIT
                #:uiop                  ; os operations like getcwd - MIT
+               #:trivial-features      ; consistent *features* - MIT
                #:split-sequence)       ; general split - public domain
   :components ((:module "src"
                 :serial t
@@ -30,11 +31,11 @@
                   :serial t
                   :components
                   (
-                   #+(or windows win32) (:file "nt-cffi")
-                   #-(or windows win32) (:file "unix-cffi")
+                   #+(or windows win32 os-windows) (:file "nt-cffi")
+                   #-(or windows win32 os-windows) (:file "unix-cffi")
                    (:file "generic")
-                   (:file "nt")
-                   (:file "posix")))
+                   #+(or windows win32 os-windows) (:file "nt")
+                   #+(or windows win32 os-windows) (:file "posix")))
                  (:file "py-path"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description

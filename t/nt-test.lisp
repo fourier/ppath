@@ -6,7 +6,6 @@
 (defpackage py.path.test.nt-test
   (:use :cl
         :alexandria
-        :py.path.details.nt
         :pypath.test.base
         :prove)
   (:shadowing-import-from py.path.details.generic
@@ -16,6 +15,8 @@
                           splitdrive
                           splitunc
                           isabs
+                          ismount
+                          abspath
                           normcase
                           basename
                           dirname
