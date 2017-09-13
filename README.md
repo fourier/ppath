@@ -50,9 +50,9 @@ Limitations: On Win32 assumed OS versions with Unicode support.
 
 ## Copyrights
 
-pypath CL library Copyright (c) 2017 Alexey Veretennikov (alexey.veretennikov@gmail.com)
-Python and Python documentation Copyright (c)  1990-2017, Python Software Foundation. 
-Parts of Python documentation on https://docs.python.org/2.7/library/os.path.html were used and adapted when necessary to the current implementation.
+ - pypath CL library Copyright (c) 2017 Alexey Veretennikov (alexey.veretennikov@gmail.com)
+ - Python and Python documentation Copyright (c)  1990-2017, Python Software Foundation. 
+ - Parts of Python documentation on https://docs.python.org/2.7/library/os.path.html were used and adapted when necessary to the current implementation.
 
 ## License
 
