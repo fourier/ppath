@@ -1,6 +1,7 @@
 (defpackage py.path.details.generic
   (:use :cl :alexandria)
-  (:export path-error getenv getcwd concat getpid get-temp-path))
+  (:export path-error getenv getcwd concat getpid get-temp-path
+           commonprefix))
 
 (in-package py.path.details.generic)
 
@@ -50,3 +51,10 @@
   #+(or windows win32) (py.path.details.nt.cffi:get-temp-path)
   #-(or windows win32) "/tmp/")
   
+(defun commonprefix (&rest  paths)
+  "Get the common prefix substring  of all strings in PATHS"
+  (unless paths
+    (return-from commonprefix ""))
+  (reduce (lambda (x y)
+            (subseq x 0 (or (mismatch x y)
+                            (length x)))) paths))

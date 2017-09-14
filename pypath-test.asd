@@ -27,7 +27,9 @@
   :components ((:module "t"
                 :components
                 ((:file "base")
-				 (:test-file "nt-test"))))
+                 #+(or windows win32 os-windows) (:test-file "nt-test")
+                 ;;#-(or windows win32 os-windows) (:test-file "unix-test")
+                 (:test-file "generic-test"))))
   :perform (test-op :after (op c)
                     (funcall (intern #.(string :run) :prove) c)))
 

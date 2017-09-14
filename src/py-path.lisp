@@ -43,15 +43,19 @@ Invariant: (abspath path) == (normpath (join (getcwd) path))."
   #+windows (py.path.details.nt:abspath path)
   #-windows (py.path.details.posix:abspath path))
 
+
 (defun basename (path)
   "Get the base name (filename) of PATH.
 Invariant: (basename path) == (cdr (split path))"
   #+windows (py.path.details.nt:basename path)
   #-windows (py.path.details.posix:basename path))
 
-(defun commonprefix (list)
-  "Return the longest path prefix (taken character-by-character) that is a prefix of all paths in list. If list is empty, return the empty string (''). Note that this may return invalid paths because it works a character at a time."
-  (error "Not implemented"))
+
+(defun commonprefix (&rest paths)
+  "Get the common prefix substring  of all strings in PATHS. The separators are not translated,
+so paths interpreted just as normal strings"
+  (apply #'py.path.details.generic:commonprefix paths))
+
 
 (defun dirname (path)
   "Get the directory name of the PATH.
@@ -68,6 +72,7 @@ Invariant: (dirname path) == (car (split path))"
 (defun lexists (path)
   "Return True if path refers to an existing path. Returns True for broken symbolic links. Equivalent to exists() on platforms lacking os.lstat()."
   (error "Not implemented"))
+
 
 (defun expanduser (path)
   "Expand ~ and ~user in the PATH with the contents of user's home path.
@@ -88,13 +93,16 @@ On error just return original PATH value."
   #+windows (py.path.details.nt:expandvars path)
   #-windows (py.path.details.posix:expandvars path))
     
+
 (defun getatime (path)
   "Return the time of last access of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
   (error "Not implemented"))
 
+
 (defun getmtime (path)
   "Return the time of last modification of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
   (error "Not implemented"))
+
 
 (defun getctime (path)
   "Return the system’s ctime which, on some systems (like Unix) is the time of the last metadata change, and, on others (like Windows), is the creation time for path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
@@ -105,6 +113,7 @@ On error just return original PATH value."
   "return the size, in bytes, of path. raise os.error if the file does not exist or is inaccessible."
     (error "Not implemented"))
 
+
 (defun isabs (path)
   "Determine if the PATH is an absolute pathname."
   #+windows (py.path.details.nt:isabs path)
@@ -114,6 +123,7 @@ On error just return original PATH value."
 (defun isfile (path)
   "return true if path is an existing regular file. this follows symbolic links, so both islink() and isfile() can be true for the same path."
   (error "Not implemented"))
+
 
 (defun isdir (path)
   "Determine if PATH is an existing directory. If the PATH is symlink then the invariant
@@ -126,8 +136,8 @@ On error just return original PATH value."
   #+windows (py.path.details.nt:islink path)
   #-windows (py.path.details.posix:islink path))
   
-;; TODO: documentation for functions below
 
+;; TODO: documentation for functions below
 (defun ismount (path)
   "Return t if pathname PATH is a mount point: a point in a file system where a different file system has been mounted. the function checks whether path‘s parent, path/.., is on a different device than path, or whether path/.. and path point to the same i-node on the same device — this should detect mount points for all unix and posix variants."
   #+windows (py.path.details.nt:ismount path)
