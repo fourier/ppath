@@ -1,7 +1,7 @@
 (defpackage py.path.details.generic
   (:use :cl :alexandria)
   (:export path-error getenv getcwd concat getpid get-temp-path
-           commonprefix))
+           commonprefix splitext))
 
 (in-package py.path.details.generic)
 
@@ -43,18 +43,24 @@
 
 (defun getpid ()
   "Return the current process id"
-  #+(or windows win32) (py.path.details.nt.cffi:getpid)
-  #-(or windows win32) (py.path.details.nt.unix:getpid))
+  #+windows (py.path.details.nt.cffi:getpid)
+  #-windows (py.path.details.nt.unix:getpid))
 
 (defun get-temp-path ()
   "Return the path to the temporary files directory"
-  #+(or windows win32) (py.path.details.nt.cffi:get-temp-path)
-  #-(or windows win32) "/tmp/")
+  #+windows (py.path.details.nt.cffi:get-temp-path)
+  #-windows "/tmp/")
   
 (defun commonprefix (&rest  paths)
   "Get the common prefix substring  of all strings in PATHS"
-  (unless paths
-    (return-from commonprefix ""))
+  (unless paths (return-from commonprefix ""))
   (reduce (lambda (x y)
-            (subseq x 0 (or (mismatch x y)
-                            (length x)))) paths))
+            (subseq x 0 (or (mismatch x y) (length x)))) paths))
+
+
+(defun splitext (path)
+  "Split path to path and extension. Extension is the text
+after the last dot.
+Invariant: (concatenate 'string root ext) == p)"
+;;  (let ((pos (find-if 
+         )

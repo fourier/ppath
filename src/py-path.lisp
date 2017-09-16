@@ -202,8 +202,9 @@ START defaults to current directory '.'"
   #-windows (py.path.details.posix:splitdrive path))
 
 (defun splitext(path)
-  "split the pathname path into a pair (root, ext) such that root + ext == path, and ext is empty or begins with a period and contains at most one period. leading periods on the basename are ignored; splitext('.cshrc') returns ('.cshrc', '')."
-    (error "Not implemented"))
+  "Split PATH to root and extension. Return a pair (root . ext)
+Invariant: (concatenate 'string root ext) == path"
+  (py.path.details.generic:splitext path))
 
 (defun splitunc (path)
   "split the pathname path into a pair (unc, rest) so that unc is the unc mount point (such as r'\\host\mount'), if present, and rest the rest of the path (such as r'\path\file.ext'). for paths containing drive letters, unc will always be the empty string."
