@@ -44,7 +44,7 @@
 (defun getpid ()
   "Return the current process id"
   #+windows (py.path.details.nt.cffi:getpid)
-  #-windows (py.path.details.nt.unix:getpid))
+  #-windows (py.path.details.posix.cffi:getpid))
 
 (defun get-temp-path ()
   "Return the path to the temporary files directory"

@@ -32,10 +32,10 @@
                   :components
                   (
                    #+(or windows win32 os-windows) (:file "nt-cffi")
-                   #-(or windows win32 os-windows) (:file "unix-cffi")
+                   #-(or windows win32 os-windows) (:file "posix-cffi")
                    (:file "generic")
                    #+(or windows win32 os-windows) (:file "nt")
-                   #+(or windows win32 os-windows) (:file "posix")))
+                   #-(or windows win32 os-windows) (:file "posix")))
                  (:file "py-path"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description
