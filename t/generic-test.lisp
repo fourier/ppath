@@ -9,7 +9,7 @@
         :pypath.test.base
         :prove)
   (:shadowing-import-from py.path.details.generic
-   commonprefix))
+   concat commonprefix splitext))
 
 (in-package :py.path.test.generic-test)
 
@@ -43,41 +43,46 @@
                   (ok (string-not-equal ss1 ss2)
                       (format nil "~s != ~s" ss1 ss2))))))))
 
+(defmacro splitext-test (path fname ext)
+  `(progn
+    (test-input splitext ,path '(,fname . ,ext))
+    (test-input splitext ,(concat "/" path)
+                '(,(concat "/" fname) . ,ext))
+    (test-input splitext ,(concat "abc/" path) '(,(concat "abc/" fname) . ,ext))
+    (test-input splitext ,(concat "abc.def/" path)  '(,(concat "abc.def/" fname) . ,ext))
+    (test-input splitext ,(concat "abc.def/" path) '(,(concat "abc.def/"  fname) . ,ext))
+    (test-input splitext ,(concat "/abc.def/" path) '(,(concat "/abc.def/" fname) . ,ext))
+    (test-input splitext ,(concat path "/") '(,(concat fname ext "/") . ""))
+))
+
 (subtest "Test splitext"
-  #|
-          tester('ntpath.splitext("foo.ext")', ('foo', '.ext'))
-        tester('ntpath.splitext("/foo/foo.ext")', ('/foo/foo', '.ext'))
-        tester('ntpath.splitext(".ext")', ('.ext', ''))
-        tester('ntpath.splitext("\\foo.ext\\foo")', ('\\foo.ext\\foo', ''))
-        tester('ntpath.splitext("foo.ext\\")', ('foo.ext\\', ''))
-        tester('ntpath.splitext("")', ('', ''))
-        tester('ntpath.splitext("foo.bar.ext")', ('foo.bar', '.ext'))
-        tester('ntpath.splitext("xx/foo.bar.ext")', ('xx/foo.bar', '.ext'))
-        tester('ntpath.splitext("xx\\foo.bar.ext")', ('xx\\foo.bar', '.ext'))
-        tester('ntpath.splitext("c:a/b\\c.d")', ('c:a/b\\c', '.d'))
+  ;; test nt splitext
+  #+:windows
+  (subtest "Test splitext for nt"
+    (test-input splitext "foo.ext" '("foo" . ".ext"))
+    (test-input splitext "/foo/foo.ext" '("/foo/foo" . ".ext"))
+    (test-input splitext ".ext" '(".ext" . ""))
+    (test-input splitext "\\foo.ext\\foo" '("\\foo.ext\\foo" . ""))
+    (test-input splitext "foo.ext\\" '("foo.ext\\" . ""))
+    (test-input splitext "" '("" . ""))
+    (test-input splitext "foo.bar.ext" '("foo.bar" . ".ext"))
+    (test-input splitext "xx/foo.bar.ext" '("xx/foo.bar" . ".ext"))
+    (test-input splitext "xx\\foo.bar.ext" '("xx\\foo.bar" . ".ext"))
+    (test-input splitext "c:a/b\\c.d" '("c:a/b\\c" . ".d")))
+  ;; test posix splitext
+  (subtest "Test splitext for posix"
+    (splitext-test "foo.bar" "foo" ".bar")
+    (splitext-test "foo.boo.bar" "foo.boo" ".bar")
+    (splitext-test "foo.boo.biff.bar" "foo.boo.biff" ".bar")
+    (splitext-test ".csh.rc" ".csh" ".rc")
+    (splitext-test "nodots" "nodots" "")
+    (splitext-test ".cshrc" ".cshrc" "")
+    (splitext-test "...manydots" "...manydots" "")
+    (splitext-test "...manydots.ext" "...manydots" ".ext")
+    (splitext-test "." "." "")
+    (splitext-test ".." ".." "")
+    (splitext-test "........" "........" "")
+    (splitext-test "" "" "")))
 
-    def splitextTest(self, path, filename, ext):
-        self.assertEqual(posixpath.splitext(path), (filename, ext))
-        self.assertEqual(posixpath.splitext("/" + path), ("/" + filename, ext))
-        self.assertEqual(posixpath.splitext("abc/" + path), ("abc/" + filename, ext))
-        self.assertEqual(posixpath.splitext("abc.def/" + path), ("abc.def/" + filename, ext))
-        self.assertEqual(posixpath.splitext("/abc.def/" + path), ("/abc.def/" + filename, ext))
-        self.assertEqual(posixpath.splitext(path + "/"), (filename + ext + "/", ""))
-
-    def test_splitext(self):
-        self.splitextTest("foo.bar", "foo", ".bar")
-        self.splitextTest("foo.boo.bar", "foo.boo", ".bar")
-        self.splitextTest("foo.boo.biff.bar", "foo.boo.biff", ".bar")
-        self.splitextTest(".csh.rc", ".csh", ".rc")
-        self.splitextTest("nodots", "nodots", "")
-        self.splitextTest(".cshrc", ".cshrc", "")
-        self.splitextTest("...manydots", "...manydots", "")
-        self.splitextTest("...manydots.ext", "...manydots", ".ext")
-        self.splitextTest(".", ".", "")
-        self.splitextTest("..", "..", "")
-        self.splitextTest("........", "........", "")
-        self.splitextTest("", "", "")
-|#
-  )      
 
 (finalize)
