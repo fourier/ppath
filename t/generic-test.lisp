@@ -55,34 +55,33 @@
     (test-input splitext ,(concat path "/") '(,(concat fname ext "/") . ""))
 ))
 
-(subtest "Test splitext"
-  ;; test nt splitext
-  #+:windows
-  (subtest "Test splitext for nt"
-    (test-input splitext "foo.ext" '("foo" . ".ext"))
-    (test-input splitext "/foo/foo.ext" '("/foo/foo" . ".ext"))
-    (test-input splitext ".ext" '(".ext" . ""))
-    (test-input splitext "\\foo.ext\\foo" '("\\foo.ext\\foo" . ""))
-    (test-input splitext "foo.ext\\" '("foo.ext\\" . ""))
-    (test-input splitext "" '("" . ""))
-    (test-input splitext "foo.bar.ext" '("foo.bar" . ".ext"))
-    (test-input splitext "xx/foo.bar.ext" '("xx/foo.bar" . ".ext"))
-    (test-input splitext "xx\\foo.bar.ext" '("xx\\foo.bar" . ".ext"))
-    (test-input splitext "c:a/b\\c.d" '("c:a/b\\c" . ".d")))
-  ;; test posix splitext
-  (subtest "Test splitext for posix"
-    (splitext-test "foo.bar" "foo" ".bar")
-    (splitext-test "foo.boo.bar" "foo.boo" ".bar")
-    (splitext-test "foo.boo.biff.bar" "foo.boo.biff" ".bar")
-    (splitext-test ".csh.rc" ".csh" ".rc")
-    (splitext-test "nodots" "nodots" "")
-    (splitext-test ".cshrc" ".cshrc" "")
-    (splitext-test "...manydots" "...manydots" "")
-    (splitext-test "...manydots.ext" "...manydots" ".ext")
-    (splitext-test "." "." "")
-    (splitext-test ".." ".." "")
-    (splitext-test "........" "........" "")
-    (splitext-test "" "" "")))
+;; test nt splitext
+#+:windows
+(subtest "Test splitext for nt"
+  (test-input splitext "foo.ext" '("foo" . ".ext"))
+  (test-input splitext "/foo/foo.ext" '("/foo/foo" . ".ext"))
+  (test-input splitext ".ext" '(".ext" . ""))
+  (test-input splitext "\\foo.ext\\foo" '("\\foo.ext\\foo" . ""))
+  (test-input splitext "foo.ext\\" '("foo.ext\\" . ""))
+  (test-input splitext "" '("" . ""))
+  (test-input splitext "foo.bar.ext" '("foo.bar" . ".ext"))
+  (test-input splitext "xx/foo.bar.ext" '("xx/foo.bar" . ".ext"))
+  (test-input splitext "xx\\foo.bar.ext" '("xx\\foo.bar" . ".ext"))
+  (test-input splitext "c:a/b\\c.d" '("c:a/b\\c" . ".d")))
+;; test posix splitext
+(subtest "Test splitext for posix"
+  (splitext-test "foo.bar" "foo" ".bar")
+  (splitext-test "foo.boo.bar" "foo.boo" ".bar")
+  (splitext-test "foo.boo.biff.bar" "foo.boo.biff" ".bar")
+  (splitext-test ".csh.rc" ".csh" ".rc")
+  (splitext-test "nodots" "nodots" "")
+  (splitext-test ".cshrc" ".cshrc" "")
+  (splitext-test "...manydots" "...manydots" "")
+  (splitext-test "...manydots.ext" "...manydots" ".ext")
+  (splitext-test "." "." "")
+  (splitext-test ".." ".." "")
+  (splitext-test "........" "........" "")
+  (splitext-test "" "" ""))
 
 
 (finalize)

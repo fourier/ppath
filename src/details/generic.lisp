@@ -62,30 +62,22 @@
   "Split path to path and extension. Extension is the text
 after the last dot.
 Invariant: (concatenate 'string root ext) == p)"
+  (declaim (inline sep-p))
   (flet ((sep-p (c)
            (declare (type  character c))
            (declare (optimize (speed 3) (safety 0)))
            #+windows (or (char= c #\\) (char= c #\/))
            #-windows (char= c #\/)
            ))
-    (let ((ext-pos (position #\. path :from-end t))
-          (sep-pos (position-if #'sep-p path :from-end t))
-          (len (length path)))
-      ;; different cases:
-      ;; - if the path starts with the dot, keep it as a name
-      (cond ((and ext-pos
-                  (every (lambda (c) (declare (type character c)) (char= c #\.))
-                         (subseq path 0 ext-pos)))
-             (cons path ""))
-            ;; - if we encountered / before dot, then no extension
-            ((and ext-pos sep-pos (> sep-pos ext-pos))
-             (cons path ""))
-            ;; - if the path ends with dots, no extension
-            ((and ext-pos (= ext-pos (1- len)))
-             (cons path ""))
-            (t
-             (let ((ext-pos (if ext-pos ext-pos len))
-                   (sep-pos (if sep-pos sep-pos 0)))
-               (cons (subseq path 0 (max ext-pos sep-pos))
-                     (subseq path (max ext-pos sep-pos) len))))))))
-
+    (let ((ext-pos (or (position #\. path :from-end t) -1))
+          (sep-pos (or (position-if #'sep-p path :from-end t) -1)))
+      (if (>= sep-pos ext-pos) ; encountered slash from right
+          (cons path "")       ; return whole path
+          ;; skip dots
+          (loop with i = (1+ sep-pos)
+                while (< i ext-pos)
+                unless (char= (char path i) #\.) do
+               (return (cons (subseq path 0 ext-pos) (subseq path ext-pos)))
+                end
+                do (incf i)
+                finally (return (cons path "")))))))
