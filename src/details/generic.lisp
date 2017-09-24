@@ -73,7 +73,8 @@ Invariant: (concatenate 'string root ext) == p)"
           (sep-pos (or (position-if #'sep-p path :from-end t) -1)))
       (if (>= sep-pos ext-pos) ; encountered slash from right
           (cons path "")       ; return whole path
-          ;; skip dots
+          ;; check if between slash and dot exist other letters,
+          ;; otherwise its a full path like ~/.bashrc
           (loop with i = (1+ sep-pos)
                 while (< i ext-pos)
                 unless (char= (char path i) #\.) do
