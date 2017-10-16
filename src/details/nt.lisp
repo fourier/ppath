@@ -18,7 +18,11 @@
            abspath
            realpath
            relpath
-           isdir))
+           isdir
+           getsize
+           getatime
+           getmtime
+           getctime))
 
 (in-package py.path.details.nt)
 
@@ -28,7 +32,8 @@
 (define-constant +path-separator+ #\;)
 (define-constant +current-dir+ "." :test #'equal)
 (define-constant +up-dir+ ".." :test #'equal)
-
+(define-constant +secs-between-epochs+ 11644473600
+                 :documentation "Seconds between 1.1.1601 and 1.1.1970")
   
 (defun posixify (path)
   "Replaces '\\' with '/' in path"
@@ -155,7 +160,7 @@ Return a cons pair (\\\\host-name\\share-name . \\file_path)"
 
 
 (defun islink (path)
-  "Test if the path is a symbolic link. Returns false on Win32"
+  "Test if the path is a symbolic link. Returns nil on Win32"
   (declare (ignore path))
   nil)
 
@@ -474,3 +479,67 @@ If STARTDIR specified, use this as a current directory to resolve against."
   (let ((FILE_ATTRIBUTE_DIRECTORY 16))
     (= 
      (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)))
+
+(defmacro check-no-attrs (filename &body body)
+  `(let ((attrs (py.path.details.nt.cffi:get-file-attributes-ex ,filename)))
+     (when (not attrs)
+      (error (format nil "Could not access file or directory ~s" ,filename)))
+     ,@body))
+
+(defun getsize (filename)
+  "Get the file size of the FILENAME.
+
+Raise error if the file does not exist or not available"
+  (check-no-attrs filename
+    (+ (ash (py.path.details.nt.cffi:file-attribute-data-n-file-size-high attrs) 32)
+       (py.path.details.nt.cffi:file-attribute-data-n-file-size-low attrs))))
+
+(defun file-time-to-secs-from-epoc (ft-high ft-low)
+  "Convert the pair FT-HIGH FT-LOW values from FILETIME struct to the
+pair of seconds,nanoseconds from epoc.
+
+Return (values seconds nanosecs)"
+  (let* ((number (+ (ash ft-high 32)
+                    ft-low))
+         (nsecs (* (rem number 10000000) 100))
+         (secs (- (/ number 10000000) +secs-between-epochs+)))
+    (values (floor secs) nsecs)))
+    
+
+(defun getatime (path)
+  "Return the time of last access of PATH.
+
+The return value is a number giving the number of seconds since the epoch.
+Raise error if the file does not exist or is inaccessible."
+  (check-no-attrs path
+    (multiple-value-bind (secs nsecs)
+      (file-time-to-secs-from-epoc
+       (py.path.details.nt.cffi:file-attribute-data-ft-last-access-time-high attrs)
+       (py.path.details.nt.cffi:file-attribute-data-ft-last-access-time-low attrs))
+      (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
+
+(defun getmtime (path)
+  "Return the time of last modification of path.
+
+The return value is a number giving the number of seconds since the epoch.
+Raise error if the file does not exist or is inaccessible."
+  (check-no-attrs path
+    (multiple-value-bind (secs nsecs)
+      (file-time-to-secs-from-epoc
+       (py.path.details.nt.cffi:file-attribute-data-ft-last-write-time-high attrs)
+       (py.path.details.nt.cffi:file-attribute-data-ft-last-write-time-low attrs))
+      (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
+
+
+(defun getctime (path)
+  "Return the creation time for path.
+
+The return value is a number giving the number of seconds since the epoch.
+Raise error if the file does not exist or is inaccessible."
+  (check-no-attrs path
+    (multiple-value-bind (secs nsecs)
+      (file-time-to-secs-from-epoc
+       (py.path.details.nt.cffi:file-attribute-data-ft-creation-time-high attrs)
+       (py.path.details.nt.cffi:file-attribute-data-ft-creation-time-low attrs))
+      (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
+

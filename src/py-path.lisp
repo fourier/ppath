@@ -96,22 +96,26 @@ On error just return original PATH value."
 
 (defun getatime (path)
   "Return the time of last access of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
-  (error "Not implemented"))
+  #+windows (py.path.details.nt:getatime path)
+  #-windows (error "Not implemented"))
 
 
 (defun getmtime (path)
   "Return the time of last modification of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
-  (error "Not implemented"))
+  #+windows (py.path.details.nt:getmtime path)
+  #-windows (error "Not implemented"))
 
 
 (defun getctime (path)
   "Return the system’s ctime which, on some systems (like Unix) is the time of the last metadata change, and, on others (like Windows), is the creation time for path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
-  (error "Not implemented"))
+  #+windows (py.path.details.nt:getctime path)  
+  #-windows (error "Not implemented"))
 
 
 (defun getsize (path)
   "return the size, in bytes, of path. raise os.error if the file does not exist or is inaccessible."
-    (error "Not implemented"))
+  #+windows (py.path.details.nt:getsize path)
+  #-windows (error "Not implemented"))
 
 
 (defun isabs (path)
