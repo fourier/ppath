@@ -22,7 +22,9 @@
            getsize
            getatime
            getmtime
-           getctime))
+           getctime
+           exists
+           isfile))
 
 (in-package py.path.details.nt)
 
@@ -476,9 +478,13 @@ If STARTDIR specified, use this as a current directory to resolve against."
       
 (defun isdir (path)
   "Determines if the path is a directory"
-  (let ((FILE_ATTRIBUTE_DIRECTORY 16))
-    (= 
-     (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)))
+  (let ((FILE_ATTRIBUTE_DIRECTORY 16)
+        (attr (py.path.details.nt.cffi:get-file-attributes path)))
+    (and (/= attr -1)
+         (/= (logand 
+              (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
+             0))))
+
 
 (defmacro check-no-attrs (filename &body body)
   `(let ((attrs (py.path.details.nt.cffi:get-file-attributes-ex ,filename)))
@@ -542,4 +548,20 @@ Raise error if the file does not exist or is inaccessible."
        (py.path.details.nt.cffi:file-attribute-data-ft-creation-time-high attrs)
        (py.path.details.nt.cffi:file-attribute-data-ft-creation-time-low attrs))
       (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
+
+
+(defun exists (path)
+  "Check if the PATH exists."
+  (let ((attrs (py.path.details.nt.cffi:get-file-attributes-ex path)))
+    (if attrs t nil)))
+
+
+(defun isfile (path)
+  "Check if the PATH exists and its a file."
+  (let ((FILE_ATTRIBUTE_DIRECTORY 16)
+        (attr (py.path.details.nt.cffi:get-file-attributes path)))
+    (and (/= attr -1)
+         (= (logand 
+             (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
+            0))))
 

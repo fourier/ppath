@@ -19,7 +19,7 @@ Limitations: On Win32 assumed OS versions with Unicode support.
 
 
 ## Implemented functions
- - From ntpath module:
+ - Functions implemented for Win32 module:
    - **split**
    - **splitunc**
    - **splitdrive**
@@ -39,10 +39,20 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **realpath**
    - **relpath**
    - **isdir**
-   
+   - **getsize**
+   - **getatime**
+   - **getmtime**
+   - **getctime**
+   - **exists**
+   - **isfile**
+ - Functions implemented for Posix module:
+   - (nothing for now)
+
 ## Not Implemented functions:
  - From ntpath module:
-   - walk
+ - walk
+ - samefile
+ - samestat
 
 ## Author
 

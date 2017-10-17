@@ -8,8 +8,8 @@
         :alexandria
         :pypath.test.base
         :prove))
-;;;   (:shadowing-import-from py.path.details.posix
-;;;    commonprefix))
+   (:shadowing-import-from py.path.details.posix
+    join))
 
 (in-package :py.path.test.posix-test)
 
@@ -18,29 +18,40 @@
 (plan nil)
 
 
-;;; (subtest "Test commonprefix"
-;;;   (test-input commonprefix nil "")
-;;;   (test-input commonprefix '("/home/username/dir" "/home/user/test") "/home/user")
-;;;   (test-input commonprefix '("/home/user/dir" "/home/user/test") "/home/user/")
-;;;   (test-input commonprefix '("/home/user/dir" "/home/user/dir") "/home/user/dir")
-;;;   (test-input commonprefix '("home:username:dir" "home:user:dir") "home:user")
-;;;   (test-input commonprefix '(":home:user:dir" ":home:user:test") ":home:user:")
-;;;   (test-input commonprefix '(":home:user:dir" ":home:user:dir") ":home:user:dir")
-;;;   (let ((testlist '("" "abc" "Xbcd" "Xb" "XY" "abcd"
-;;;                     "aXc" "abd" "ab" "aX" "abcX")))
-;;;     (loop for s1 in testlist do
-;;;           (loop for s2 in testlist
-;;;                 for p = (commonprefix s1 s2)
-;;;                 for n = (length p)
-;;;                 do
-;;;                 (ok (starts-with-subseq p s1)
-;;;                     (format nil "~s starts with ~s" s1 p))
-;;;                 (ok (starts-with-subseq p s2)
-;;;                     (format nil "~s starts with ~s" s2 p))
-;;;                 (when (string-not-equal s1 s2)
-;;;                   (let ((ss1 (subseq s1 n (min (1+ n) (length s1))))
-;;;                         (ss2 (subseq s2 n (min (1+ n) (length s2)))))
-;;;                   (ok (string-not-equal ss1 ss2)
-;;;                       (format nil "~s != ~s" ss1 ss2))))))))
+(subtest "Test join"
+  (test-input join '("/foo" "bar" "/bar" "baz") "/bar/baz")
+  (test-input join '("/foo" "bar" "baz") "/foo/bar/baz")
+  (test-input join '("/foo/" "bar/" "baz/") "/foo/bar/baz/"))
+
+(subtest "Test split"
+  (test-input split "/foo/bar" '("/foo" "bar"))
+  (test-input split "/"  '("/" ""))
+  (test-input split "foo" '("" "foo"))
+  (test-input split "////foo" '("////" "foo"))
+  (test-input split "//foo//bar" '("//foo" "bar")))
+
+(subtest "Test isabs"
+  (test-input isabs "" nil)
+  (test-input isabs "/" t)
+  (test-input isabs "/foo" t)
+  (test-input isabs "/foo/bar" t)
+  (test-input isabs "foo/bar" nil))
+
+(subtest "Test basename"
+  (test-input basename "/foo/bar" "bar")
+  (test-input basename "/" "")
+  (test-input basename "foo" "foo")
+  (test-input basename "////foo" "foo")
+  (test-input basename "//foo//bar" "bar"))
+
+(subtest "Test dirname"
+  (test-input dirname "/foo/bar" "/foo")
+  (test-input dirname "/" "/")
+  (test-input dirname "foo" "")
+  (test-input dirname "////foo" "////")
+  (test-input dirname "//foo//bar" "//foo"))
+
+
+         
 
 (finalize)

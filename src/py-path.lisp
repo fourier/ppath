@@ -41,14 +41,14 @@
   "Convert PATH to the absolute path.
 Invariant: (abspath path) == (normpath (join (getcwd) path))."
   #+windows (py.path.details.nt:abspath path)
-  #-windows (py.path.details.posix:abspath path))
+  #-windows (error "Not implemented"))
 
 
 (defun basename (path)
   "Get the base name (filename) of PATH.
 Invariant: (basename path) == (cdr (split path))"
   #+windows (py.path.details.nt:basename path)
-  #-windows (py.path.details.posix:basename path))
+  #-windows (error "Not implemented"))
 
 
 (defun commonprefix (&rest paths)
@@ -61,17 +61,19 @@ so paths interpreted just as normal strings"
   "Get the directory name of the PATH.
 Invariant: (dirname path) == (car (split path))"
   #+windows (py.path.details.nt:basename path)
-  #-windows (py.path.details.posix:basename path))
+  #-windows (error "Not implemented"))
 
 
 (defun exists (path)
   "Return True if path refers to an existing path. Returns False for broken symbolic links. On some platforms, this function may return False if permission is not granted to execute os.stat() on the requested file, even if the path physically exists."
-  (error "Not implemented"))  
+  #+windows (py.path.details.nt:exists path)
+  #-windows (error "Not implemented"))
   
 
 (defun lexists (path)
   "Return True if path refers to an existing path. Returns True for broken symbolic links. Equivalent to exists() on platforms lacking os.lstat()."
-  (error "Not implemented"))
+  #+windows (py.path.details.nt:exists path)
+  #-windows (error "Not implemented"))
 
 
 (defun expanduser (path)
@@ -85,13 +87,13 @@ On Windows the path is taken either from HOME or USERPROFILE, or constructed vua
 On error just return original PATH value."
 
   #+windows (py.path.details.nt:expanduser path)
-  #-windows (py.path.details.posix:expanduser path))
+  #-windows (error "Not implemented"))
 
   
 (defun expandvars (path)
   "Expand the PATH replacing environment variables with their contents. The variables like ${var} and $var (and additionally %var% on Windows) are getting replaced by their values. All unknown or malformed variables ignored and kept as it is."
   #+windows (py.path.details.nt:expandvars path)
-  #-windows (py.path.details.posix:expandvars path))
+  #-windows (error "Not implemented"))
     
 
 (defun getatime (path)
@@ -121,31 +123,32 @@ On error just return original PATH value."
 (defun isabs (path)
   "Determine if the PATH is an absolute pathname."
   #+windows (py.path.details.nt:isabs path)
-  #-windows (py.path.details.posix:isabs path))
+  #-windows (error "Not implemented"))
   
 
 (defun isfile (path)
   "return true if path is an existing regular file. this follows symbolic links, so both islink() and isfile() can be true for the same path."
-  (error "Not implemented"))
+  #+windows (py.path.details.nt:isfile path)
+  #-windows (error "Not implemented"))
 
 
 (defun isdir (path)
   "Determine if PATH is an existing directory. If the PATH is symlink then the invariant
 (and (islink PATH) (isdir PATH)) holds."
   #+windows (py.path.details.nt:isdir path)
-  #-windows (py.path.details.posix:isdir path))
+  #-windows (error "Not implemented"))
 
 (defun islink (path)
   "Determine if the PATH is symbolic link(on OS where symbolic links supported, otherwise always return nil)."
   #+windows (py.path.details.nt:islink path)
-  #-windows (py.path.details.posix:islink path))
+  #-windows (error "Not implemented"))
   
 
 ;; TODO: documentation for functions below
 (defun ismount (path)
   "Return t if pathname PATH is a mount point: a point in a file system where a different file system has been mounted. the function checks whether path‘s parent, path/.., is on a different device than path, or whether path/.. and path point to the same i-node on the same device — this should detect mount points for all unix and posix variants."
   #+windows (py.path.details.nt:ismount path)
-  #-windows (py.path.details.posix:ismount path))
+  #-windows (error "Not implemented"))
 
 
 
@@ -154,31 +157,31 @@ On error just return original PATH value."
 
 On windows, the drive letter is not reset when an absolute path component (e.g., \"\foo\") is encountered. If a component contains a drive letter, all previous components are thrown away and the drive letter is reset. Note that since there is a current directory for each drive, (join \"c:\" \"foo\") represents a path relative to the current directory on drive c: (c:foo), not c:\foo."
   #+windows (apply #'py.path.details.nt:join path paths)
-  #-windows (apply #'py.path.details.posix:join path paths))
+  #-windows (error "Not implemented"))
 
 
 (defun normcase (path)
   "Normalize the case of a pathname. On unix and mac os x, this returns the path unchanged; on windows, it lowercases PATH and converts forward slashes to backward slashes."
   #+windows (py.path.details.nt:normcase path)
-  #-windows (py.path.details.posix:normcase path))
+  #-windows (error "Not implemented"))
 
 (defun normpath (path)
   "Normalize a pathname by collapsing redundant separators and up-level references so that a//b, a/b/, a/./b and a/foo/../b all become a/b. This string manipulation may change the meaning of a path that contains symbolic links. On windows, it converts forward slashes to backward slashes. to normalize case, use (normcase PATH)."
   #+windows (py.path.details.nt:normpath path)
-  #-windows (py.path.details.posix:normpath path))
+  #-windows (error "Not implemented"))
 
 
 (defun realpath(path)
   "Return the canonical path of the specified filename, eliminating any symbolic links encountered in the path (if they are supported by the operating system)."
   #+windows (py.path.details.nt:realpath path)
-  #-windows (py.path.details.posix:realpath path))
+  #-windows (error "Not implemented"))
 
 (defun relpath (path &optional (start "."))
   "Return a relative filepath to PATH either from the current directory or from an optional START directory. This is a path computation: the filesystem is not accessed to confirm the existence or nature of path or start.
 
 START defaults to current directory '.'"
   #+windows (py.path.details.nt:relpath path start)
-  #-windows (py.path.details.posix:relpath path start))
+  #-windows (error "Not implemented"))
 
 
 (defun samefile(path1 path2)
@@ -197,13 +200,13 @@ START defaults to current directory '.'"
 (defun split (path)
   "split the pathname path into a pair, (head, tail) where tail is the last pathname component and head is everything leading up to that. the tail part will never contain a slash; if path ends in a slash, tail will be empty. if there is no slash in path, head will be empty. if path is empty, both head and tail are empty. trailing slashes are stripped from head unless it is the root (one or more slashes only). in all cases, join(head, tail) returns a path to the same location as path (but the strings may differ). also see the functions dirname() and basename()."
   #+windows (py.path.details.nt:split path)
-  #-windows (py.path.details.posix:split path))
+  #-windows (error "Not implemented"))
   
 
 (defun splitdrive (path)
   "split the pathname path into a pair (drive, tail) where drive is either a drive specification or the empty string. on systems which do not use drive specifications, drive will always be the empty string. in all cases, drive + tail will be the same as path."
   #+windows (py.path.details.nt:splitdrive path)
-  #-windows (py.path.details.posix:splitdrive path))
+  #-windows (error "Not implemented"))
 
 (defun splitext(path)
   "Split PATH to root and extension. Return a pair (root . ext)
@@ -213,7 +216,7 @@ Invariant: (concatenate 'string root ext) == path"
 (defun splitunc (path)
   "split the pathname path into a pair (unc, rest) so that unc is the unc mount point (such as r'\\host\mount'), if present, and rest the rest of the path (such as r'\path\file.ext'). for paths containing drive letters, unc will always be the empty string."
   #+windows (py.path.details.nt:splitunc path)
-  #-windows (py.path.details.posix:splitunc path))
+  #-windows (error "Not implemented"))
 
 
 (defun walk(path visit arg)

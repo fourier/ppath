@@ -130,13 +130,13 @@ for constants list"
   (macrolet ((get-high (field)
                    `(foreign-slot-value 
                      (foreign-slot-pointer attr '(:struct win32-file-attribute-data)
-                                          ',field)
-                    '(:struct win32-filetime) 'dw-high-date-time))
-                 (get-low (field)
-                   `(foreign-slot-value 
-                     (foreign-slot-pointer attr '(:struct win32-file-attribute-data)
-                                          ',field)
-                    '(:struct win32-filetime) 'dw-low-date-time)))
+                                           ',field)
+                     '(:struct win32-filetime) 'dw-high-date-time))
+             (get-low (field)
+               `(foreign-slot-value 
+                 (foreign-slot-pointer attr '(:struct win32-file-attribute-data)
+                                       ',field)
+                 '(:struct win32-filetime) 'dw-low-date-time)))
     (with-foreign-slots ((dw-file-attributes
                                        n-file-size-high
                                        n-file-size-low)
@@ -159,11 +159,8 @@ errno in case of errors.
 Also we don't fallback to investigate directory since it should do it automatically
 according to https://msdn.microsoft.com/en-us/library/windows/desktop/aa364946(v=vs.85).aspx"
   (with-foreign-string (lp-file-name path :encoding +win32-encoding+ :null-terminated-p t)
-    (with-foreign-object (attr '(:pointer (:struct win32-file-attribute-data)))
+    (with-foreign-object (attr '(:struct win32-file-attribute-data))
       (let ((attr-result (get-file-attributes-ex-w lp-file-name 0 attr)))
         (unless (= attr-result 0) ; not failed to get attributes
           (make-file-attribute-data-from-win32 attr))))))
 
-               
-
-      
