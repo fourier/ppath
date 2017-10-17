@@ -19,3 +19,5 @@
 
 (in-package py.path.details.posix)
 
+(defun join (path &rest paths)
+  nil)

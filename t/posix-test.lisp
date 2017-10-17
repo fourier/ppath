@@ -8,7 +8,7 @@
         :alexandria
         :pypath.test.base
         :prove))
-   (:shadowing-import-from py.path.details.posix
+   (:shadowing-import-from :py.path.details.posix
     join))
 
 (in-package :py.path.test.posix-test)
