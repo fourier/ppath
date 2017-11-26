@@ -7,7 +7,7 @@
   (:use :cl
         :alexandria
         :pypath.test.base
-        :prove))
+        :prove)
    (:shadowing-import-from :py.path.details.posix
     join))
 
