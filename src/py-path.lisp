@@ -157,7 +157,7 @@ On error just return original PATH value."
 
 On windows, the drive letter is not reset when an absolute path component (e.g., \"\foo\") is encountered. If a component contains a drive letter, all previous components are thrown away and the drive letter is reset. Note that since there is a current directory for each drive, (join \"c:\" \"foo\") represents a path relative to the current directory on drive c: (c:foo), not c:\foo."
   #+windows (apply #'py.path.details.nt:join path paths)
-  #-windows (error "Not implemented"))
+  #-windows (apply #'py.path.details.posix:join path paths))
 
 
 (defun normcase (path)
