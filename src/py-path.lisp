@@ -200,7 +200,7 @@ START defaults to current directory '.'"
 (defun split (path)
   "split the pathname path into a pair, (head, tail) where tail is the last pathname component and head is everything leading up to that. the tail part will never contain a slash; if path ends in a slash, tail will be empty. if there is no slash in path, head will be empty. if path is empty, both head and tail are empty. trailing slashes are stripped from head unless it is the root (one or more slashes only). in all cases, join(head, tail) returns a path to the same location as path (but the strings may differ). also see the functions dirname() and basename()."
   #+windows (py.path.details.nt:split path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:split path))
   
 
 (defun splitdrive (path)

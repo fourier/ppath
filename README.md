@@ -47,6 +47,7 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **isfile**
  - Functions implemented for Posix module:
    - **join**
+   - **split**
 
 ## Not Implemented functions:
  - From ntpath module:

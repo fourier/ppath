@@ -10,6 +10,7 @@
         :prove)
    (:shadowing-import-from :py.path.details.posix
     join
+    split-components ;; helper function
     split))
 
 (in-package :py.path.test.posix-test)
@@ -26,12 +27,25 @@
   (test-input join '("/" "/") "/")
   (test-input join '("a" "/bb") "/bb"))
 
+(subtest "Test split-path-components helper function"
+  (test-input split-components "/abc/def/gh//12" '("/" "abc" "/" "def" "/" "gh" "//" "12"))
+  (test-input split-components "/" '("/"))
+  (test-input split-components "/a" '("/" "a"))
+  (test-input split-components "a//bcd" '("a" "//" "bcd"))
+  (test-input split-components "//a/bcd" '("//" "a" "/" "bcd"))
+  (test-input split-components "//a/bcd/" '("//" "a" "/" "bcd" "/"))
+  (test-input split-components "" nil))
+  
+
 (subtest "Test split"
-  (test-input split "/foo/bar" '("/foo" "bar"))
-  (test-input split "/"  '("/" ""))
-  (test-input split "foo" '("" "foo"))
-  (test-input split "////foo" '("////" "foo"))
-  (test-input split "//foo//bar" '("//foo" "bar")))
+  (test-input split "" '("" . ""))
+  (test-input split "/foo/bar" '("/foo" . "bar"))
+  (test-input split "/"  '("/" . ""))
+  (test-input split "foo" '("" . "foo"))
+  (test-input split "////foo" '("////" . "foo"))
+  (test-input split "//foo//bar" '("//foo" . "bar"))
+  (test-input split "/foo/bar" '("/foo" . "bar"))
+  (test-input split "/foo/bar/" '("/foo/bar/" . "")))
 
 (subtest "Test isabs"
   (test-input isabs "" nil)

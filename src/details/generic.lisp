@@ -1,6 +1,6 @@
 (defpackage py.path.details.generic
   (:use :cl :alexandria)
-  (:export path-error getenv getcwd concat getpid get-temp-path
+  (:export path-error string-type getenv getcwd concat getpid get-temp-path
            commonprefix splitext))
 
 (in-package py.path.details.generic)
@@ -15,6 +15,11 @@
   (:report (lambda (condition stream)
              (format stream "Path processing: ~a" (reason condition)))))
 
+(deftype string-type ()
+         #+lispworks7 
+         'lw:simple-bmp-string
+         #+lispworks6 'lw:simple-text-string
+         #-lispworks 'string)
 
 (declaim (notinline getenv))
 (defun getenv (name)
@@ -29,16 +34,16 @@
   ;; Based on uiop:getcwd. 
   (namestring (uiop:getcwd)))
 
-(defun concat (str1 &rest strs)
+(defun concat (&rest strs)
   "Concatenate strings in a portable manner, converting to unicode string if necessary"
   (let ((str-type
          #+lispworks 
-          (let ((lw-strtype #+lispworks7 'lw:simple-bmp-string #+lispworks6 'lw:simple-text-string))
-            (if (some (lambda (x) (subtypep (type-of x) lw-strtype)) (cons str1 strs))
+          (let ((lw-strtype 'string-type))
+            (if (some (lambda (x) (subtypep (type-of x) lw-strtype)) strs)
                 lw-strtype
                 'string))
           #-lispworks 'string))
-    (apply #'concatenate str-type (cons str1 (mapcar #'string strs)))))
+    (apply #'concatenate str-type (mapcar #'string strs))))
 
 
 (defun getpid ()
