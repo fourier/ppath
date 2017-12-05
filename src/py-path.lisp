@@ -48,7 +48,7 @@ Invariant: (abspath path) == (normpath (join (getcwd) path))."
   "Get the base name (filename) of PATH.
 Invariant: (basename path) == (cdr (split path))"
   #+windows (py.path.details.nt:basename path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:basename path))
 
 
 (defun commonprefix (&rest paths)
@@ -61,7 +61,7 @@ so paths interpreted just as normal strings"
   "Get the directory name of the PATH.
 Invariant: (dirname path) == (car (split path))"
   #+windows (py.path.details.nt:basename path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:basename path))
 
 
 (defun exists (path)
@@ -123,7 +123,7 @@ On error just return original PATH value."
 (defun isabs (path)
   "Determine if the PATH is an absolute pathname."
   #+windows (py.path.details.nt:isabs path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:isabs path))
   
 
 (defun isfile (path)
@@ -163,7 +163,7 @@ On windows, the drive letter is not reset when an absolute path component (e.g.,
 (defun normcase (path)
   "Normalize the case of a pathname. On unix and mac os x, this returns the path unchanged; on windows, it lowercases PATH and converts forward slashes to backward slashes."
   #+windows (py.path.details.nt:normcase path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:normcase path))
 
 (defun normpath (path)
   "Normalize a pathname by collapsing redundant separators and up-level references so that a//b, a/b/, a/./b and a/foo/../b all become a/b. This string manipulation may change the meaning of a path that contains symbolic links. On windows, it converts forward slashes to backward slashes. to normalize case, use (normcase PATH)."

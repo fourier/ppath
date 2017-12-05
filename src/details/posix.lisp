@@ -33,6 +33,7 @@
         (t ;; have to add "/" in between
          (apply #'join (concat path "/" (car paths)) (cdr paths)))))
 
+
 (defun split-components (path)
   "Splits the path to the list of elements using
 slash as a separator. Separators are not omitted.
@@ -75,4 +76,33 @@ If the path ends with \"/\", the file component is empty"
                           (if (> (length path-comps) 1)
                               (butlast path-comps)
                               path-comps)) (last-elt components)))))))
-        
+
+
+(defun isabs (path)
+  "Return t if the path is absolute."
+  (and (> (length path) 0)
+       (char= (char path 0) #\/)))
+
+
+(defun normcase (path)
+  "Normalize case of PATH.
+On case-sensitive file systems (default on Linux and OSX) just returns PATH unchanged"
+  path)
+
+
+(defun splitdrive (path)
+  "Split PATH into drive and path.
+Doing nothing on POSIX, drive component will be empty"
+  (cons "" path))
+
+
+(defun basename (path)
+  "Returns filename component of the PATH"
+  (cdr (split path)))
+
+
+(defun dirname (path)
+  "Returns directory component of the PATH"
+  (car (split path)))
+
+

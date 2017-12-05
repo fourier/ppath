@@ -48,6 +48,10 @@ Limitations: On Win32 assumed OS versions with Unicode support.
  - Functions implemented for Posix module:
    - **join**
    - **split**
+   - **isabs**
+   - **normcase**
+   - **basename**
+   
 
 ## Not Implemented functions:
  - From ntpath module:

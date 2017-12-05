@@ -11,7 +11,10 @@
    (:shadowing-import-from :py.path.details.posix
     join
     split-components ;; helper function
-    split))
+    split
+    isabs
+    basename
+    dirname))
 
 (in-package :py.path.test.posix-test)
 

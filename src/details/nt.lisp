@@ -95,9 +95,9 @@ If the head is a drive name, the slashes are not stripped from it."
 \\\\host-name\\share-name\\file_path
 Return a cons pair (\\\\host-name\\share-name . \\file_path)"
   (let ((norm (posixify path))
-        pos
-        pos1)
-    (when (not (starts-with-subseq +unc-prefix+ norm))
+        (pos nil)
+        (pos1 nil))
+    (unless (starts-with-subseq +unc-prefix+ norm)
       ;; paths must start with "//"
       (return-from splitunc (cons "" path)))
     (unless (setq pos (position +posix-separator+ norm :start 2))
@@ -279,57 +279,58 @@ and $$ and %% translated to $ and % accordingly"
                    (find #\% path)))
     (return-from expandvars path))
   (loop
-     with res = ""
-     with i = 0
-     with len = (length path)
-     with last = (1- len)
-     while (< i len)
-     for c = (char path i)
-     do
-       (macrolet ((acc (var &rest vars)
-                    `(setf res (concat res ,var ,@vars))))
-         (case c
-           (#\'                         ; single quote
-            (let ((next-quote (or (position #\' path :start (1+ i)) len)))
-              (acc (subseq path i (min (1+ next-quote) len)))
-              (setf i next-quote)))
-           (#\%
-            ;; look for doubles: %%
-            (if (and (< i last) (char= (char path (1+ i)) #\%))
-                (progn (acc c) (incf i))
-                ;; looking for next %
-                (let ((next-% (position #\% path :start (1+ i))))
-                  (if (not next-%)      ; not found, return all the rest
-                      (setf res (concat res (subseq path i))
-                            i last)
-                      ;; found
-                      (let ((var (subseq path (1+ i) next-%)))
-                        (acc (if (getenv var) (getenv var) (concat "%" var "%")))
-                        (setf i next-%))))))
-           (#\$
-            ;; look for doubles: $$
-            (cond ((and (< i last) (char= (char path (1+ i)) #\$))
-                   (acc c) (incf i))
-                  ;; looking for ${var} constructions
-                  ((and (< i last) (char= (char path (1+ i)) #\{))
-                   (if-let (end-of-var (position #\} path :start (+ 2 i)))
-                     ;; extract variable from {}
-                     (let ((var (subseq path (+ 2 i) end-of-var)))
-                       (acc (if (getenv var) (getenv var) (concat "$" var)))
-                       (setf i  end-of-var))
-                     ;; no closing "}" found
-                     (setf res (concat res (subseq path i)) 
-                           i last)))
-                  ;; all other cases: $var and alike
-                  (t                    
-                   (let* ((end-of-var (or (position-if-not #'alphanumericp path :start (1+ i)) len))
-                          (var (subseq path (1+ i) end-of-var)))
+   with res = ""
+   with i = 0
+   with len = (length path)
+   with last = (1- len)
+   while (< i len)
+   for c = (char path i)
+   do
+   (macrolet ((acc (var &rest vars)
+                `(setf res (concat res ,var ,@vars))))
+     (case c
+       (#\'                         ; single quote
+        (let ((next-quote (or (position #\' path :start (1+ i)) len)))
+          (acc (subseq path i (min (1+ next-quote) len)))
+          (setf i next-quote)))
+       (#\%
+        ;; look for doubles: %%
+        (cond ((and (< i last) (char= (char path (1+ i)) #\%))
+               (acc c) (incf i))
+              (t
+               ;; looking for next %
+               (let ((next-% (position #\% path :start (1+ i))))
+                 (if (not next-%)      ; not found, return all the rest
+                     (setf res (concat res (subseq path i))
+                           i last)
+                     ;; found
+                     (let ((var (subseq path (1+ i) next-%)))
+                       (acc (if (getenv var) (getenv var) (concat "%" var "%")))
+                       (setf i next-%)))))))
+       (#\$
+        ;; look for doubles: $$
+        (cond ((and (< i last) (char= (char path (1+ i)) #\$))
+               (acc c) (incf i))
+              ;; looking for ${var} constructions
+              ((and (< i last) (char= (char path (1+ i)) #\{))
+               (if-let (end-of-var (position #\} path :start (+ 2 i)))
+                   ;; extract variable from {}
+                   (let ((var (subseq path (+ 2 i) end-of-var)))
                      (acc (if (getenv var) (getenv var) (concat "$" var)))
-                     (setf i (1- end-of-var))))))
-           ;; not special character, just accumulate it
-           (otherwise (acc c))))
-       (incf i)
-     finally (return res)))
+                     (setf i  end-of-var))
+                 ;; no closing "}" found
+                 (setf res (concat res (subseq path i)) 
+                       i last)))
+              ;; all other cases: $var and alike
+              (t                    
+               (let* ((end-of-var (or (position-if-not #'alphanumericp path :start (1+ i)) len))
+                      (var (subseq path (1+ i) end-of-var)))
+                 (acc (if (getenv var) (getenv var) (concat "$" var)))
+                 (setf i (1- end-of-var))))))
+       ;; not special character, just accumulate it
+       (otherwise (acc c))))
+   (incf i)
+   finally (return res)))
        
 
 (defun normpath (path)
