@@ -61,7 +61,7 @@ Example:
               (setf current-word nil)
               (push x current-word))
             end
-            finally do (push current-word components))
+            finally (push current-word components))
       (nreverse
        (mapcar (compose (rcurry #'coerce 'string-type) #'nreverse) components)))))
 
