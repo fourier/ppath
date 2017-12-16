@@ -148,16 +148,68 @@ Doing nothing on POSIX, drive component will be empty"
 
 
 (defun samefile (path1 path2)
+  "Determine if PATH1 and PATH2 are the paths to the same file.
+If one of the paths is symlink to another they considered the same."
   (samestat (osicat-posix:stat path1)
             (osicat-posix:stat path2)))
 
 
 (defun fd-from-stream (stream)
+  "Get the posix file handle from open STREAM"
   #+ecl (EXT:FILE-STREAM-FD stream)
   #+sbcl (sb-sys:fd-stream-fd stream)
   #+lispworks (slot-value stream 'stream::file-handle)
   #+ccl (ccl::stream-device stream :input))
 
+
 (defun sameopenfile (stream1 stream2)
+  "Determine if the open file streams STREAM1 and STREAM2 are
+of the same file"
   (samestat (osicat-posix:fstat (fd-from-stream stream1))
-            (osicat-posix:stat (fd-from-stream stream2))))
+            (osicat-posix:fstat (fd-from-stream stream2))))
+
+
+(defun ismount (path)
+  "Determine if the PATH is mount point"
+  )
+
+
+(defun expanduser (path)
+  "Expand ~ and ~user inside the PATH.
+Return PATH unchanged if unable to expand"
+  path)
+
+
+(defun expandvars (path)
+  "Expand environment variables in PATH of form $VAR and ${VAR},
+if variables exist. Otherwise they stay unchanged in the output."
+  path)
+
+
+(defun normpath(path)
+  "Normalize path, removing unnecessary/redundant parts, like dots,
+double slashes, etc. Expanding .. as well.
+Example:
+///..//./foo/.//bar => /foo/bar"
+  path)
+
+
+(defun abspath (path)
+  "Return an absolute path."
+  path)
+
+
+(defun realpath(filename)
+  "Return real path of the file, following symlinks if necessary"
+  filename)
+
+
+(defun relpath (path &optional (start "."))
+  "Convert PATH from absolute to relative"
+  path)
+
+
+  
+
+
+
