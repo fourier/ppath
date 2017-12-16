@@ -19,7 +19,6 @@
   :version "0.1"
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
-  :defsystem-depends-on ("cffi-grovel")
   :depends-on (#:alexandria            ; general utilities - Public domain
                #:cffi                  ; to access dlls (kernel32) - MIT
                #-(or windows win32 os-windows)
