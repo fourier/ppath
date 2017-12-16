@@ -2,6 +2,7 @@
   (:use :cl :alexandria)
   (:export abspath
            basename
+           exists
            expanduser
            expandvars
            isabs
@@ -9,6 +10,7 @@
            islink
            ismount
            join
+           lexists
            normcase
            normpath
            realpath
@@ -121,8 +123,15 @@ Doing nothing on POSIX, drive component will be empty"
       (not (samestat stat lstat)))))
 
 
+(defun exists (path)
+  "Return true if path exists. If file is a broken link return nil"
+  (osicat-check-no-file 
+    (let ((stat (osicat-posix:stat path)))
+      (not (null stat)))))
+
+
 (defun lexists (path)
-  "Return true if path exists, regardless if its a link or a file/directory"
+  "Return true if path exists, regardless if its a link(even broken) or a file/directory"
   (osicat-check-no-file 
     (let ((lstat (osicat-posix:lstat path)))
       (not (null lstat)))))
