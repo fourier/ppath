@@ -228,9 +228,11 @@ user shell"
 
 (defun expanduser (path)
   "Expand ~ and ~user inside the PATH.
+If the PATH not starts with ~ it return unchanged.
 Return PATH unchanged if unable to expand"
-  ;; needed access to environment variables,
-  path)
+  (unless (starts-with #\~ path)
+    (return-from expanduser path))
+  (concat (getenv "HOME") "~"))
 
 
 (defun expandvars (path)

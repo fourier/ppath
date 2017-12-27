@@ -50,7 +50,7 @@ Example:
         (result (gensym)))
     `(let ((,oldf (symbol-function ',old)))
        (setf (symbol-function ',old) ,new)
-       (let ((,result (progn ,@body)))
+       (let ((,result (ignore-errors (progn ,@body))))
          (setf (symbol-function ',old) ,oldf)
          ,result))))
 

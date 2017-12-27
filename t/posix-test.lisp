@@ -8,7 +8,8 @@
         :alexandria
         :pypath.test.base
         :prove)
-   (:shadowing-import-from :py.path.details.posix
+   (:shadowing-import-from :py.path.details.generic getenv concat)
+   (:shadowing-import-from :py.path.details.posix 
     join
     split-components ;; helper function
     split
@@ -19,7 +20,11 @@
     sameopenfile
     samefile
     exists
-    lexists))
+    lexists
+    getpwuid ; helper function
+    getuid   ; helper function
+    getpwnam ; helper function   
+    expanduser))
 
 (in-package :py.path.test.posix-test)
 
@@ -139,6 +144,39 @@
           (delete-file file2))))))
 
 
+(subtest "Test expanduser"
+  (test-input expanduser "dir" "dir")
+  (loop for home in '("/" "//" "///")
+        do 
+        (with-mocked-function (getenv
+                               (lambda (name) 
+                                 (ok (string= name "HOME") "Expecting request for HOME environment variable")
+                                 home))
+          (test-input expanduser "~" "/")
+          (test-input expanduser "~/" "/")
+          (test-input expanduser "~/dir" "/dir")))
+  (with-mocked-function (getenv
+                         (lambda (name) 
+                           (ok (string= name "HOME") "Expecting request for HOME environment variable")
+                           "/home/myhomedir"))
+    (test-input expanduser "~/" "/home/myhomedir/")
+    (is (concat (expanduser "~") "/") (expanduser "~/") :test #'equal
+        "(expandpath \"~/\") should be the same as (concat (expandpath \"~\") \"/\""))
+  ;; test the other user home directories
+  (with-mocked-function (getpwnam
+                         (lambda (name) (cond ((equal name "root") '("root" "***" 1 1 "root" "/root" "/bin/sh"))
+                                              ((equal name "user") '("user" "***" 1 1 "root" "/Users/user" "/bin/sh")))))
+    (test-input expanduser "~root/" "/root/")
+    (test-input expanduser "~user/" "/Users/user/")
+    ;; remove HOME variable to test fall-back to getpwuid
+    (with-mocked-function (getenv
+                           (lambda (name) 
+                             (ok (string= name "HOME") "Expecting request for HOME environment variable")
+                             nil))
+      (with-mocked-function (getuid (lambda () 503))
+        (with-mocked-function (getpwuid (lambda (id) (if (= id 503) '("user" "***" 1 1 "root" "/Users/user/" "/bin/sh"))))
+          ;; trailing / shall be removed
+          (test-input expanduser "~" "/Users/user"))))))
          
 
 (finalize)
