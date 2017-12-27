@@ -31,7 +31,9 @@
 (declaim (notinline getcwd))
 (defun getcwd ()
   "Get the current working directory as a string"
-  ;; Based on uiop:getcwd. 
+  ;; Using uiop:getcwd.
+  ;; The function is a wrapper around uiop:getcwd declared notinline so
+  ;; the tests could override it
   (namestring (uiop:getcwd)))
 
 (defun concat (&rest strs)

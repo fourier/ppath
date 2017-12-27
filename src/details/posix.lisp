@@ -18,7 +18,7 @@
            split
            splitdrive
            splitunc)
-  (:shadowing-import-from py.path.details.generic concat string-type))
+  (:shadowing-import-from py.path.details.generic concat string-type getenv))
 
 (in-package py.path.details.posix)
 
@@ -180,12 +180,56 @@ of the same file"
 
 (defun ismount (path)
   "Determine if the PATH is mount point"
+  ;; needed realpath to implement
   )
+
+
+(declaim (notinline getuid))
+(defun getuid ()
+  "Get the current user id"
+  ;; The function is a wrapper around osicat-posix:getuid declared notinline so
+  ;; the tests could override it
+  (osicat-posix:getuid))
+
+
+(declaim (notinline getpwuid))
+(defun getpwuid (uid)
+  "Get the list of values from DirectoryService (and /etc/passwd) by user id.
+Returns the list:
+username
+password(will have only * most likely)
+user id
+group id
+full user name
+user home directory
+user shell"
+  ;; The function is a wrapper around osicat-posix:getpwuid declared notinline so
+  ;; the tests could override it
+  (multiple-value-list
+   (osicat-posix:getpwuid uid)))
+
+
+(declaim (notinline getpwnam))
+(defun getpwnam (username)
+  "Get the list of values from DirectoryService (and /etc/passwd) by user name.
+Returns the list:
+username
+password(will have only * most likely)
+user id
+group id
+full user name
+user home directory
+user shell"
+  ;; The function is a wrapper around osicat-posix:getpwnam declared notinline so
+  ;; the tests could override it
+  (multiple-value-list
+   (osicat-posix:getpwnam username)))
 
 
 (defun expanduser (path)
   "Expand ~ and ~user inside the PATH.
 Return PATH unchanged if unable to expand"
+  ;; needed access to environment variables,
   path)
 
 
