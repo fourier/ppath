@@ -178,12 +178,6 @@ of the same file"
             (osicat-posix:fstat (fd-from-stream stream2))))
 
 
-(defun ismount (path)
-  "Determine if the PATH is mount point"
-  ;; needed realpath to implement
-  )
-
-
 (declaim (notinline getuid))
 (defun getuid ()
   "Get the current user id"
@@ -226,14 +220,36 @@ user shell"
    (osicat-posix:getpwnam username)))
 
 
+(defun or-strings (arg &rest args)
+  "Auxulary helper function, return the first not empty string from its arguments"
+  (find-if (compose #'not #'emptyp) (cons arg args)))
+
 (defun expanduser (path)
   "Expand ~ and ~user inside the PATH.
 If the PATH not starts with ~ it return unchanged.
 Return PATH unchanged if unable to expand"
+  ;; path shall start with ~
   (unless (starts-with #\~ path)
     (return-from expanduser path))
-  (concat (getenv "HOME") "~"))
-
+  ;; position of the first slash in the string
+  (let* ((slash (or (position #\/ path) (length path)))
+         ;; home directory without trailing /
+         (homedir (string-right-trim "/"
+                                     ;; if the path like ~/ then its our user
+                                     (if (= slash 1)
+                                         ;; get the value from environment variable HOME if possible
+                                         (if-let (home (getenv "HOME"))
+                                             home
+                                           ;; otherwise get the path using uid and getpwuid
+                                           (nth 5 (getpwuid (getuid))))
+                                         ;; extract the username from path, like ~user/ => user
+                                         ;; and get his home directory using getpwnam
+                                         (nth 5 (getpwnam (subseq path 1 slash)))))))
+    ;; construct the path by concatenating home directory and the rest
+    ;; of the string, or just return slash if both are emtpy
+    (or-strings (concat homedir (subseq path slash)) "/")))
+               
+    
 
 (defun expandvars (path)
   "Expand environment variables in PATH of form $VAR and ${VAR},
@@ -264,6 +280,10 @@ Example:
   path)
 
 
+(defun ismount (path)
+  "Determine if the PATH is mount point"
+  ;; needed realpath to implement
+  )
   
 
 

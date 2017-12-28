@@ -65,29 +65,33 @@ Invariant: (dirname path) == (car (split path))"
 
 
 (defun exists (path)
-  "Return True if path refers to an existing path. Returns False for broken symbolic links. On some platforms, this function may return False if permission is not granted to execute os.stat() on the requested file, even if the path physically exists."
+  "Return True if path refers to an existing path. Returns nil for broken symbolic links."
   #+windows (py.path.details.nt:exists path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:exists path))
   
 
 (defun lexists (path)
-  "Return True if path refers to an existing path. Returns True for broken symbolic links. Equivalent to exists() on platforms lacking os.lstat()."
+  "Return True if path refers to an existing path. Returns True for broken symbolic links. On Windows exists=lexists."
   #+windows (py.path.details.nt:exists path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:lexists path))
 
 
 (defun expanduser (path)
   "Expand ~ and ~user in the PATH with the contents of user's home path.
 ~ - home directory
 ~user - user's home directory
-===TODO: fix this text when posix implementation is ready
-On Unix, an initial ~ is replaced by the environment variable HOME if it is set; otherwise the current user’s home directory is looked up in the password directory through the built-in module pwd. An initial ~user is looked up directly in the password directory.
-===
 On Windows the path is taken either from HOME or USERPROFILE, or constructed vua HOMEPATH and HOMEDRIVE.
-On error just return original PATH value."
+On error just return original PATH value.
+On POSIX systems the ~ is replaced with contents of the HOME environment variable or taken from password database
+(/etc/passwd or similar).
 
+Examples: (given the user \"username\" with home directory /Users/username)
+CL-USER > (expanduser \"~/dir\")
+=> /Users/username/dir
+CL-USER > (expanduser \"~root/dir\")
+=> /root/dir"
   #+windows (py.path.details.nt:expanduser path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:expanduser path))
 
   
 (defun expandvars (path)

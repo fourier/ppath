@@ -51,13 +51,22 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **isabs**
    - **normcase**
    - **basename**
-   
+   - **dirname**
+   - **islink**
+   - **exists**
+   - **lexists**
+   - **samestat**
+   - **samefile**
+   - **sameopenfile**
+   - **expanduser**
 
 ## Not Implemented functions:
  - From ntpath module:
- - walk
- - samefile
- - samestat
+   - walk
+   - samefile
+   - samestat
+ - From posix module:
+   - see list of implemented above
 
 ## Author
 
