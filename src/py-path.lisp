@@ -94,10 +94,16 @@ CL-USER > (expanduser \"~root/dir\")
   #-windows (py.path.details.posix:expanduser path))
 
   
-(defun expandvars (path)
-  "Expand the PATH replacing environment variables with their contents. The variables like ${var} and $var (and additionally %var% on Windows) are getting replaced by their values. All unknown or malformed variables ignored and kept as it is."
-  #+windows (py.path.details.nt:expandvars path)
-  #-windows (error "Not implemented"))
+(defun expandvars (path &optional (modify-in-quotes #+windows nil #-windows t))
+  "Expand the PATH replacing environment variables with their contents.
+The variables like ${var} and $var (and additionally %var% on Windows) are getting replaced by their values.
+All unknown or malformed variables ignored and kept as it is.
+
+The difference between Windows and Posix systems is that on Windows variables inside single quotes are not
+expanded, i.e. \"'$HOME'\" will remain \"'$HOME'\", while on Posix systems it will be expanded.
+This behavior kept for compatibility with Python."
+  #+windows (py.path.details.nt:expandvars path modify-in-quotes)
+  #-windows (py.path.details.posix:expandvars path modify-in-quotes))
     
 
 (defun getatime (path)

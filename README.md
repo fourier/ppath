@@ -59,6 +59,7 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **samefile**
    - **sameopenfile**
    - **expanduser**
+   - **expandvars**
 
 ## Not Implemented functions:
  - From ntpath module:

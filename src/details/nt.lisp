@@ -268,12 +268,11 @@ PATHS is a list of rest paths, drive1 and p1 split first path"
      (subseq path first-slash))))
 
     
-(defun expandvars (path)
+(defun expandvars (path &optional (modify-in-quotes nil))
   "Expand environment variables in the path.
 Variables could be written as $var, ${var}, %var%.
 The variables inside single quotes are not expanded,
 and $$ and %% translated to $ and % accordingly"
-  (declare (optimize (debug 3) (speed 0) (safety 3)))
   (unless (and (not (emptyp path))
                (or (find #\$ path)
                    (find #\% path)))
@@ -290,9 +289,12 @@ and $$ and %% translated to $ and % accordingly"
                 `(setf res (concat res ,var ,@vars))))
      (case c
        (#\'                         ; single quote
-        (let ((next-quote (or (position #\' path :start (1+ i)) len)))
-          (acc (subseq path i (min (1+ next-quote) len)))
-          (setf i next-quote)))
+        (if modify-in-quotes ; if perform replacement in quotes just
+            (acc c)          ; treat single quote as any other character
+            ;; otherwise find next "closing" single quote and move position
+            (let ((next-quote (or (position #\' path :start (1+ i)) len)))
+              (acc (subseq path i (min (1+ next-quote) len)))
+              (setf i next-quote))))
        (#\%
         ;; look for doubles: %%
         (cond ((and (< i last) (char= (char path (1+ i)) #\%))

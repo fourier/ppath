@@ -251,10 +251,55 @@ Return PATH unchanged if unable to expand"
                
     
 
-(defun expandvars (path)
+(defun expandvars (path &optional (modify-in-quotes t))
   "Expand environment variables in PATH of form $VAR and ${VAR},
-if variables exist. Otherwise they stay unchanged in the output."
-  path)
+if variables exist. Otherwise they stay unchanged in the output.
+Optional argument MODIFY-IN-QUOTES if set to t (default) perform
+replacement inside single quotes. Otherwise strings like
+'$HOME' will left as it is."
+  (declare (optimize (debug 3) (speed 0) (safety 3)))
+  (unless (and (not (emptyp path))
+               (find #\$ path))
+    (return-from expandvars path))
+  (loop
+   with res = ""
+   with i = 0
+   with len = (length path)
+   with last = (1- len)
+   while (< i len)
+   for c = (char path i)
+   do
+   (macrolet ((acc (var &rest vars)
+                `(setf res (concat res ,var ,@vars))))
+     (case c
+       (#\'                         ; single quote
+        (if modify-in-quotes ; if perform replacement in quotes just
+            (acc c)          ; treat single quote as any other character
+            ;; otherwise find next "closing" single quote and move position
+            (let ((next-quote (or (position #\' path :start (1+ i)) len)))
+              (acc (subseq path i (min (1+ next-quote) len)))
+              (setf i next-quote))))
+       (#\$
+        ;; looking for ${var} constructions
+        (if (and (< i last) (char= (char path (1+ i)) #\{))
+            (if-let (end-of-var (position #\} path :start (+ 2 i)))
+                ;; extract variable from {}
+                (let ((var (subseq path (+ 2 i) end-of-var)))
+                  (acc (if (getenv var) (getenv var) (concat "$" var)))
+                  (setf i  end-of-var))
+              ;; no closing "}" found
+              (setf res (concat res (subseq path i)) 
+                    i last))
+            ;; all other cases: $var and alike
+            (let* ((end-of-var (or (position-if-not #'alphanumericp path :start (1+ i)) len))
+                   (var (subseq path (1+ i) end-of-var)))
+              (acc (if (getenv var) (getenv var) (concat "$" var)))
+              (setf i (1- end-of-var)))))
+       ;; not special character, just accumulate it
+       (otherwise (acc c))))
+   (incf i)
+   finally (return res)))
+
 
 
 (defun normpath(path)

@@ -24,7 +24,8 @@
     getpwuid ; helper function
     getuid   ; helper function
     getpwnam ; helper function   
-    expanduser))
+    expanduser
+    expandvars))
 
 (in-package :py.path.test.posix-test)
 
@@ -178,5 +179,44 @@
           ;; trailing / shall be removed
           (test-input expanduser "~" "/Users/user"))))))
          
+
+(subtest "Test expandvars"
+  ;; environment - hash table containing "mocked" environment vars
+  (let ((env-vars (make-hash-table :test #'equalp)))
+    ;; quickly set mocked environ variable 
+    (flet ((env (x y) (setf (gethash x env-vars) y))
+           (unenv (x) (remhash x env-vars)))
+      ;; mock the getenv function 
+      (with-mocked-function (py.path.details.generic::getenv
+                              (lambda (name) (gethash name env-vars)))
+        (clrhash env-vars)
+        (env "foo" "bar")
+        (env "{foo" "baz1")
+        (env "{foo}" "baz2")
+        (test-input expandvars "foo" "foo")
+        (test-input expandvars "$foo bar" "bar bar")
+        (test-input expandvars "$$foo bar" "$bar bar")
+        (test-input expandvars "${foo}bar" "barbar")
+        (test-input expandvars "$[foo]bar" "$[foo]bar")
+        (test-input expandvars "$bar bar" "$bar bar")
+        (test-input expandvars "$?bar" "$?bar")
+        (test-input expandvars "$foo}bar" "bar}bar")
+        (test-input expandvars "${foo" "${foo")
+        (test-input expandvars "${{foo}}" "baz1}")
+        (test-input expandvars "$foo$foo" "barbar")
+        (test-input expandvars "$bar$bar" "$bar$bar")
+        (test-input expandvars "\'$foo\'$bar" "\'bar\'$bar")
+        (test-input expandvars "bar\'$foo" "bar\'bar")
+        (test-input expandvars '("\'$foo\'$bar" nil) "\'$foo\'$bar")
+        (test-input expandvars '("bar\'$foo'" nil) "bar\'$foo'")
+        ;; some additional degraded/corner cases
+        (test-input expandvars "" "")
+        (test-input expandvars "'" "'")
+        (test-input expandvars "$" "$")
+        (test-input expandvars "%" "%")
+        (test-input expandvars "test'" "test'")
+        (test-input expandvars "test''" "test''")
+        (test-input expandvars "test$$" "test$$")))))
+
 
 (finalize)
