@@ -228,7 +228,8 @@
   (test-input normpath "///foo/.//bar//"  "/foo/bar")
   (test-input normpath "///foo/.//bar//.//..//.//baz"  "/foo/baz")
   (test-input normpath "///..//./foo/.//bar"  "/foo/bar")
-  (test-input normpath "../.././.." "../../.."))
+  (test-input normpath "../.././.." "../../..")
+  (test-input normpath "../.././dir//.." "../.."))
 
 
 (finalize)
