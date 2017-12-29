@@ -1,5 +1,5 @@
 (defpackage py.path.details.nt
-  (:use :cl :alexandria)
+  (:use :cl :alexandria :py.path.details.constants)
   (:shadowing-import-from py.path.details.generic
                           path-error concat getcwd getenv)
   (:export splitdrive
@@ -27,15 +27,6 @@
            isfile))
 
 (in-package py.path.details.nt)
-
-(define-constant +separator+  #\\)
-(define-constant +posix-separator+ #\/)
-(define-constant +unc-prefix+ "//" :test #'equal)
-(define-constant +path-separator+ #\;)
-(define-constant +current-dir+ "." :test #'equal)
-(define-constant +up-dir+ ".." :test #'equal)
-(define-constant +secs-between-epochs+ 11644473600
-                 :documentation "Seconds between 1.1.1601 and 1.1.1970")
   
 (defun posixify (path)
   "Replaces '\\' with '/' in path"

@@ -32,7 +32,7 @@
                 ((:module "details"
                   :serial t
                   :components
-                  (
+                  ((:file "constants")
                    #+(or windows win32 os-windows) (:file "nt-cffi")
                    #-(or windows win32 os-windows) (:file "posix-cffi")
                    (:file "generic")

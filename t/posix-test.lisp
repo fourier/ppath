@@ -25,7 +25,8 @@
     getuid   ; helper function
     getpwnam ; helper function   
     expanduser
-    expandvars))
+    expandvars
+    normpath))
 
 (in-package :py.path.test.posix-test)
 
@@ -217,6 +218,17 @@
         (test-input expandvars "test'" "test'")
         (test-input expandvars "test''" "test''")
         (test-input expandvars "test$$" "test$$")))))
+
+
+(subtest "Test normpath"
+  (test-input normpath "" ".")
+  (test-input normpath "/"  "/")
+  (test-input normpath "//"  "//")
+  (test-input normpath "///"  "/")
+  (test-input normpath "///foo/.//bar//"  "/foo/bar")
+  (test-input normpath "///foo/.//bar//.//..//.//baz"  "/foo/baz")
+  (test-input normpath "///..//./foo/.//bar"  "/foo/bar")
+  (test-input normpath "../.././.." "../../.."))
 
 
 (finalize)

@@ -1,5 +1,5 @@
 (defpackage py.path.details.posix
-  (:use :cl :alexandria)
+  (:use :cl :alexandria :py.path.details.constants)
   (:export abspath
            basename
            exists
@@ -29,13 +29,15 @@
 
 
 (defun join (path &rest paths)
+  (unless path
+    (setf path ""))
   (cond ((null paths) ;; finalizing recursion clause
          path)
-        ((starts-with #\/ (car paths))
+        ((starts-with +separator+ (car paths))
          ;; a component is an absolute path, discard
          ;; all previous components to the left
          (apply #'join (car paths) (cdr paths)))
-        ((or (emptyp path) (ends-with #\/ path))
+        ((or (emptyp path) (ends-with +separator+ path))
          ;; just concat and continue to join
          (apply #'join (concat path (car paths)) (cdr paths)))
         (t ;; have to add "/" in between
@@ -50,10 +52,10 @@ Example:
   => (\"/\" \"abc\" \"/\" \"def\" \"/\" \"gh\" \"//\" \"12\")"
   (unless (emptyp path)
     (let (components)
-      (loop with is-sep = (char= #\/ (char path 0))
+      (loop with is-sep = (char= +separator+ (char path 0))
             with current-word = nil
             for x across path
-            for c = (char= #\/ x)
+            for c = (char= +separator+ x)
             if (eql c is-sep) do
             (push x current-word)
             else do
@@ -74,7 +76,7 @@ If the path ends with \"/\", the file component is empty"
   (let ((components (split-components path)))
     (cond ((not components) ;; empty clause
            (cons "" ""))
-          ((ends-with #\/ (last-elt components)) ;; is a directory
+          ((ends-with +separator+ (last-elt components)) ;; is a directory
            (cons (apply #'concat components) ""))
           (t
            (let ((path-comps (butlast components)))
@@ -89,7 +91,7 @@ If the path ends with \"/\", the file component is empty"
 (defun isabs (path)
   "Return t if the path is absolute."
   (and (> (length path) 0)
-       (char= (char path 0) #\/)))
+       (char= (char path 0) +separator+)))
 
 
 (defun normcase (path)
@@ -232,7 +234,7 @@ Return PATH unchanged if unable to expand"
   (unless (starts-with #\~ path)
     (return-from expanduser path))
   ;; position of the first slash in the string
-  (let* ((slash (or (position #\/ path) (length path)))
+  (let* ((slash (or (position +separator+ path) (length path)))
          ;; home directory without trailing /
          (homedir (string-right-trim "/"
                                      ;; if the path like ~/ then its our user
@@ -300,28 +302,60 @@ replacement inside single quotes. Otherwise strings like
    (incf i)
    finally (return res)))
 
-
-
 (defun normpath(path)
   "Normalize path, removing unnecessary/redundant parts, like dots,
 double slashes, etc. Expanding .. as well.
 Example:
 ///..//./foo/.//bar => /foo/bar"
-  path)
+  (when (emptyp path)
+    (return-from normpath +current-dir+))
+  ;; split path to components like "/" "my" "/" "directory"
+  (let* ((components (split-components path)))
+    ;; process them. 
+    ;; First consider tripple and more slashes as a single slash
+    (when (starts-with-subseq "///" (car components))
+      (setf (car components) "/"))
+    (let* ((head (when (starts-with +separator+ (car components)) (car components)))
+           ;; next remove slashes and dots
+           (tail
+            (remove-if (lambda (x)
+                         (or (starts-with +separator+ x)
+                             (equal +current-dir+ x)))
+                       (if head (cdr components) components)))
+           (result))
+      (cond (tail
+             (loop for p in tail
+                   for skip-next = nil
+                   ;; ./foo/.//bar
+                   do
+                   (cond ((equal p +current-dir+)
+                          (setf skip-next t))
+                         ((and (equal p +up-dir+) head)
+                          (pop result))
+                         ((not skip-next)
+                          (push p result))
+                         (t
+                          (setf skip-next nil))))
+             (join head (apply #'join (nreverse result))))
+            (t head)))))
+
 
 
 (defun abspath (path)
   "Return an absolute path."
+  ;; requires normpath
   path)
 
 
 (defun realpath(filename)
   "Return real path of the file, following symlinks if necessary"
+  ;; requires abspath 
   filename)
 
 
 (defun relpath (path &optional (start "."))
   "Convert PATH from absolute to relative"
+  ;; requires abspath
   path)
 
 

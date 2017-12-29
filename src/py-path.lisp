@@ -176,9 +176,13 @@ On windows, the drive letter is not reset when an absolute path component (e.g.,
   #-windows (py.path.details.posix:normcase path))
 
 (defun normpath (path)
-  "Normalize a pathname by collapsing redundant separators and up-level references so that a//b, a/b/, a/./b and a/foo/../b all become a/b. This string manipulation may change the meaning of a path that contains symbolic links. On windows, it converts forward slashes to backward slashes. to normalize case, use (normcase PATH)."
+  "Normalize path, removing unnecessary/redundant parts, like dots,
+double slashes, etc. Expanding .. as well.
+Example:
+///..//./foo/.//bar => /foo/bar
+On Windows it additionally converts forward slashes to backward slashes."
   #+windows (py.path.details.nt:normpath path)
-  #-windows (error "Not implemented"))
+  #-windows (py.path.details.posix:normpath path))
 
 
 (defun realpath(path)
