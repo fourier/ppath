@@ -5,10 +5,12 @@ env:
   matrix:
     - LISP=sbcl
     - LISP=ccl
-    - LISP=ccl32
+# by some reason 32bit versions lacks necessary libraries on TravisCI    
+#    - LISP=ccl32
 
 os:
-  - linux  
+  - linux
+  - osx
 
 install:
   # Install cl-travis

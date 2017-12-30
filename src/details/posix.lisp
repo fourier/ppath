@@ -324,19 +324,27 @@ Example:
                        (if head (cdr components) components)))
            (result))
       (cond (tail
-             (loop for p in tail
-                   for skip-next = nil
-                   ;; ./foo/.//bar
+             (loop with prev-normal-dir = nil
+                   for p in tail
                    do
-                   (cond ((equal p +current-dir+)
-                          (setf skip-next t))
-                         ((and (equal p +up-dir+) head)
-                          (pop result))
-                         ((not skip-next)
-                          (push p result))
-                         (t
-                          (setf skip-next nil))))
-             (join head (apply #'join (nreverse result))))
+                   (flet ((isup () (equal p +up-dir+))) ; shortcut
+                     (cond ((and (isup) (not prev-normal-dir) head) ; for paths like /../..
+                            nil)                                    ; ignore '..' parts
+                           ((and prev-normal-dir (isup)) ; if previous directory was normal and 
+                            (pop result)                 ; the current dir is '..', pop previous
+                            (setf prev-normal-dir nil))
+                           (t
+                            ;; otherwise push entry to the result list and set the previous
+                            ;; normal directory variable so it can be popped if next entry
+                            ;; is '..'
+                            (push p result)
+                            (when (not (isup))
+                              (setf prev-normal-dir p))))))
+             (cond (result
+                    (join head (apply #'join (nreverse result))))
+                   ((and (not result) head)
+                    head)
+                    (t +current-dir+)))
             (t head)))))
 
 
