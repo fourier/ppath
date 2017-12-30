@@ -6,15 +6,25 @@ env:
     - LISP=sbcl
     - LISP=ccl
 # by some reason 32bit versions lacks necessary libraries on TravisCI    
-#    - LISP=ccl32
+    - LISP=ccl32
+    - LISP=ecl
+    - LISP=allegro
 
+matrix:
+  allow_failures:
+    - env: LISP=ecl
+    - env: LISP=allegro
+  
 os:
   - linux
-  - osx
+#  - osx # cl-travis doesn't work on osx 
 
 install:
   # Install cl-travis
   - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | bash
+  - if [ "${LISP:(-2)}" = "32" ]; then
+      sudo apt-get install -y libc6-dev-i386;
+    fi
 
 script:
   - cl -l prove -e '(or (prove:run :pypath-test) (uiop:quit -1))'

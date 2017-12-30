@@ -342,9 +342,13 @@ Example:
                               (setf prev-normal-dir p))))))
              (cond (result
                     (join head (apply #'join (nreverse result))))
+                   ;; if we eliminated everything but have a "/" initial, return it
                    ((and (not result) head)
                     head)
+                   ;; if we eliminated everything and didn't have "/" initial,
+                   ;; then its the current directory
                     (t +current-dir+)))
+            ;; if nothing after initial slashes, return them
             (t head)))))
 
 
