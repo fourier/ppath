@@ -13,7 +13,7 @@
 (in-package py.path.details.constants)
 
 (define-constant +separator+  #+windows #\\ #-windows #\/)
-(define-constant +sep-string+ (string +separator+))
+(define-constant +sep-string+ (string +separator+) :test #'equal)
 (define-constant +posix-separator+ #\/)
 (define-constant +unc-prefix+ "//" :test #'equal)
 (define-constant +path-separator+ #+windows #\; #-windows #\:)
