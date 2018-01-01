@@ -8,6 +8,8 @@
   (osicat-posix:getpid))
 
 
+;; char * realpath(const char *restrict file_name, char *restrict resolved_name)
+
 (defun array-to-hex (arr)
   ;; a SLOW version used only for dumping output to logs etc
   (string-downcase

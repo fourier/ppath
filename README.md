@@ -66,8 +66,13 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **relpath**
 
 ## Not Implemented functions:
+ - samestat (makes no sense since osicat's wrapper around stat()/fstat() 
+   calls is used)
+ - walk (there are already couple of good implementation around)
+
+Additionally:
+
  - From ntpath module:
-   - walk
    - samefile
    - samestat
  - From posix module:

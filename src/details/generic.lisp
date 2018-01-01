@@ -62,7 +62,6 @@
   "Get the common prefix substring  of all strings in PATHS.
 PATHS components could also be lists of strings, like results of
 SPLIT operation on paths.
-The trailing slash is omitted.
 If no common prefix return empty string."
   (unless paths (return-from commonprefix ""))
   (reduce (lambda (x y)

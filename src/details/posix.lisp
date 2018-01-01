@@ -5,8 +5,10 @@
            exists
            expanduser
            expandvars
+           getsize
            isabs
            isdir
+           isfile
            islink
            ismount
            join
@@ -15,6 +17,8 @@
            normpath
            realpath
            relpath
+           samefile
+           sameopenfile
            split
            splitdrive
            splitunc)
@@ -409,6 +413,25 @@ Example:
   )
   
 
+(defun isdir (path)
+  "Determine if the PATH is a directory"
+  (osicat-check-no-file
+    (let ((stat (osicat-posix:stat path)))
+      (if t t nil))))
+      
 
+(defun isfile (path)
+  "Determine if the PATH is a regular file"
+  (osicat-check-no-file
+    (let ((stat (osicat-posix:stat path)))
+      (if t t nil))))
+
+
+(defun getsize (path)
+  "Return the file size"
+  (osicat-check-no-file
+    (let ((stat (osicat-posix:stat path)))
+      (slot-value stat 'osicat-posix::size))))
+  
 
 

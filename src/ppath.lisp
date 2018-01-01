@@ -12,6 +12,7 @@
    getatime
    getmtime
    getctime
+   getsize
    isabs
    isfile
    isdir
@@ -24,12 +25,10 @@
    relpath
    samefile
    sameopenfile
-   samestat
    split
    splitdrive
    splitext
-   splitunc
-   walk))
+   splitunc))
 
 
 (in-package ppath)
@@ -41,7 +40,7 @@
   "Convert PATH to the absolute path.
 Invariant: (abspath path) == (normpath (join (getcwd) path))."
   #+windows (ppath.details.nt:abspath path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:abspath path))
 
 
 (defun basename (path)
@@ -53,7 +52,9 @@ Invariant: (basename path) == (cdr (split path))"
 
 (defun commonprefix (&rest paths)
   "Get the common prefix substring  of all strings in PATHS. The separators are not translated,
-so paths interpreted just as normal strings"
+so paths interpreted just as normal strings.
+PATHS components could also be lists of strings, like results of
+SPLIT operation on paths. In this case the comparison happens elementwise."
   (apply #'ppath.details.generic:commonprefix paths))
 
 
@@ -127,7 +128,7 @@ This behavior kept for compatibility with Python."
 (defun getsize (path)
   "return the size, in bytes, of path. raise os.error if the file does not exist or is inaccessible."
   #+windows (ppath.details.nt:getsize path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:getsize path))
 
 
 (defun isabs (path)
@@ -139,19 +140,19 @@ This behavior kept for compatibility with Python."
 (defun isfile (path)
   "return true if path is an existing regular file. this follows symbolic links, so both islink() and isfile() can be true for the same path."
   #+windows (ppath.details.nt:isfile path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:isfile path))
 
 
 (defun isdir (path)
   "Determine if PATH is an existing directory. If the PATH is symlink then the invariant
 (and (islink PATH) (isdir PATH)) holds."
   #+windows (ppath.details.nt:isdir path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:isdir path))
 
 (defun islink (path)
   "Determine if the PATH is symbolic link(on OS where symbolic links supported, otherwise always return nil)."
   #+windows (ppath.details.nt:islink path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:islink path))
   
 
 ;; TODO: documentation for functions below
@@ -195,21 +196,19 @@ On Windows it additionally converts forward slashes to backward slashes."
 
 START defaults to current directory '.'"
   #+windows (ppath.details.nt:relpath path start)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:relpath path start))
 
 
 (defun samefile(path1 path2)
   "return true if both pathname arguments refer to the same file or directory (as indicated by device number and i-node number). raise an exception if a os.stat() call on either pathname fails."
-    (error "Not implemented"))
+  #+windows (error "Not implemented")
+  #-windows (ppath.details.posix:samefile path1 path2))
 
 (defun sameopenfile(fp1 fp2)
   "return true if the file descriptors fp1 and fp2 refer to the same file."
-    (error "Not implemented"))
+  #+windows (error "Not implemented")
+  #-windows (ppath.details.posix:sameopenfile fp1 fp2))
 
-
-(defun samestat(stat1 stat2)
-  "return true if the stat tuples stat1 and stat2 refer to the same file. these structures may have been returned by os.fstat(), os.lstat(), or os.stat(). this function implements the underlying comparison used by samefile() and sameopenfile()."
-    (error "Not implemented"))
 
 (defun split (path)
   "split the pathname path into a pair, (head, tail) where tail is the last pathname component and head is everything leading up to that. the tail part will never contain a slash; if path ends in a slash, tail will be empty. if there is no slash in path, head will be empty. if path is empty, both head and tail are empty. trailing slashes are stripped from head unless it is the root (one or more slashes only). in all cases, join(head, tail) returns a path to the same location as path (but the strings may differ). also see the functions dirname() and basename()."
@@ -220,26 +219,20 @@ START defaults to current directory '.'"
 (defun splitdrive (path)
   "split the pathname path into a pair (drive, tail) where drive is either a drive specification or the empty string. on systems which do not use drive specifications, drive will always be the empty string. in all cases, drive + tail will be the same as path."
   #+windows (ppath.details.nt:splitdrive path)
-  #-windows (error "Not implemented"))
+  #-windows (cons "" path))
 
 (defun splitext(path)
   "Split PATH to root and extension. Return a pair (root . ext)
 Invariant: (concatenate 'string root ext) == path"
   (ppath.details.generic:splitext path))
 
+
 (defun splitunc (path)
   "split the pathname path into a pair (unc, rest) so that unc is the unc mount point (such as r'\\host\mount'), if present, and rest the rest of the path (such as r'\path\file.ext'). for paths containing drive letters, unc will always be the empty string."
   #+windows (ppath.details.nt:splitunc path)
-  #-windows (error "Not implemented"))
+  #-windows (declare (ignore path))
+  #-windows (error "This function is not available on POSIX systems"))
 
-
-(defun walk(path visit arg)
-  "calls the function visit with arguments (arg, dirname, names) for each directory in the directory tree rooted at path (including path itself, if it is a directory). the argument dirname specifies the visited directory, the argument names lists the files in the directory (gotten from os.listdir(dirname)). the visit function may modify names to influence the set of directories visited below dirname, e.g. to avoid visiting certain parts of the tree. (the object referred to by names must be modified in place, using del or slice assignment.)
-
-    note
-
-    symbolic links to directories are not treated as subdirectories, and that walk() therefore will not visit them. to visit linked directories you must identify them with os.path.islink(file) and os.path.isdir(file), and invoke walk() as necessary."
-  (error "Not implemented"))
 
 
             
