@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/fourier/pypath.svg?branch=master)](https://travis-ci.org/fourier/pypath)
+[![Build Status](https://travis-ci.org/fourier/ppath.svg?branch=master)](https://travis-ci.org/fourier/ppath)
 # A Common Lisp implementation of the Python's os.path module
 Work in progress!!!
 
@@ -17,6 +17,7 @@ Limitations: On Win32 assumed OS versions with Unicode support.
 
 ### Linux
 
+### OSX
 
 ## Implemented functions
  - Functions implemented for Win32 module:
@@ -60,6 +61,9 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **sameopenfile**
    - **expanduser**
    - **expandvars**
+   - **normpath**
+   - **abspath**
+   - **relpath**
 
 ## Not Implemented functions:
  - From ntpath module:
@@ -67,7 +71,8 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - samefile
    - samestat
  - From posix module:
-   - see list of implemented above
+   - realpath
+   - ismount
 
 ## Author
 
