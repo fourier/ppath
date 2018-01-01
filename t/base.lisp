@@ -2,19 +2,19 @@
 ;; File containing common settings for all unit tests
 ;; 
 (in-package :cl-user)
-(defpackage pypath.test.base
+(defpackage ppath.test.base
   (:use :cl
         :prove)
   (:export testfile test-input with-mocked-function random-shuffle random-shufflef chdir))
    
-(in-package :pypath.test.base)
+(in-package :ppath.test.base)
 
 ;; turn off ansi colors in report output
 (setf prove.color:*enable-colors* nil)
 ;; change type of the reporter to Test Anything Protocol
 (setf prove:*default-reporter* :tap)
 
-(defvar *test-data-path* (fad:merge-pathnames-as-directory (asdf:system-relative-pathname :pypath-test #P"t/") #P"data/"))
+(defvar *test-data-path* (fad:merge-pathnames-as-directory (asdf:system-relative-pathname :ppath-test #P"t/") #P"data/"))
 
 (defun testfile (filename)
   (merge-pathnames filename *test-data-path*))
@@ -22,7 +22,7 @@
 
 (defmacro test-input (fun inp out)
   ;; example of generated code:
-  ;; (is (py.path.details.nt::splitdrive "C:\\")
+  ;; (is (ppath.details.nt::splitdrive "C:\\")
   ;;     '("C:" . "\\")
 	;;   :test #'equal
   ;;     "Testing input: 'C:\\'"))

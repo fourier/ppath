@@ -1,16 +1,16 @@
 ;;;; nt-test.lisp
-;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :ppath)' in your Lisp.
 ;;
 
 (in-package :cl-user)
-(defpackage py.path.test.nt-test
+(defpackage ppath.test.nt-test
   (:use :cl
         :alexandria
-        :pypath.test.base
+        :ppath.test.base
         :prove)
-  (:shadowing-import-from py.path.details.generic
+  (:shadowing-import-from ppath.details.generic
    concat)
-  (:shadowing-import-from py.path.details.nt
+  (:shadowing-import-from ppath.details.nt
                           split
                           splitdrive
                           splitunc
@@ -26,9 +26,9 @@
                           normpath
                           relpath))
 
-(in-package :py.path.test.nt-test)
+(in-package :ppath.test.nt-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :ppath)' in your Lisp.
 
 (plan nil)
 
@@ -223,7 +223,7 @@
     (flet ((env (x y) (setf (gethash x env-vars) y))
            (unenv (x) (remhash x env-vars)))
       ;; mock the getenv function 
-      (with-mocked-function (py.path.details.generic::getenv
+      (with-mocked-function (ppath.details.generic::getenv
                               (lambda (name) (gethash name env-vars)))
         (clrhash env-vars)
         (env "foo" "bar")
@@ -299,9 +299,9 @@
   (test-input relpath "a/b" "a\\b")
   (test-input relpath "../a/b" "..\\a\\b")
 
-  (let* ((tmppath (join (py.path.details.generic:get-temp-path)
-                        (format nil "@test_~d_tmp" (py.path.details.generic:getpid))))
-         (old-dir (py.path.details.generic::getcwd))
+  (let* ((tmppath (join (ppath.details.generic:get-temp-path)
+                        (format nil "@test_~d_tmp" (ppath.details.generic:getpid))))
+         (old-dir (ppath.details.generic::getcwd))
          (currentdir (basename tmppath)))
     ;; ensure-directories-exist requires trailing slash
     (ensure-directories-exist (concat tmppath "/"))

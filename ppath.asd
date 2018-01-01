@@ -1,6 +1,6 @@
 #|
-  This file is a part of pypath project.
-  Copyright (c) 2017 Alexey Veretennikov (alexey.veretennikov@gmail.com)
+  This file is a part of ppath project.
+  Copyright (c) 2017-2018 Alexey Veretennikov (alexey.veretennikov@gmail.com)
 |#
 
 #|
@@ -11,11 +11,11 @@
 (in-package :cl-user)
 
 
-(defpackage py.path-asd
+(defpackage ppath-asd
   (:use :cl :asdf))
-(in-package :py.path-asd)
+(in-package :ppath-asd)
 
-(defsystem #:pypath
+(defsystem #:ppath
   :version "0.1"
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
@@ -38,7 +38,7 @@
                    (:file "generic")
                    #+(or windows win32 os-windows) (:file "nt")
                    #-(or windows win32 os-windows) (:file "posix")))
-                 (:file "py-path"))))
+                 (:file "ppath"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description
   #.(with-open-file (stream (merge-pathnames
@@ -52,4 +52,4 @@
                                :fill-pointer t)))
           (setf (fill-pointer seq) (read-sequence seq stream))
           seq)))
-  :in-order-to ((test-op (test-op pypath-test))))
+  :in-order-to ((test-op (test-op ppath-test))))

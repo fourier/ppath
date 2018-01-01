@@ -1,5 +1,5 @@
-(defpackage py.path.details.posix
-  (:use :cl :alexandria :py.path.details.constants)
+(defpackage ppath.details.posix
+  (:use :cl :alexandria :ppath.details.constants)
   (:export abspath
            basename
            exists
@@ -18,14 +18,14 @@
            split
            splitdrive
            splitunc)
-  (:shadowing-import-from py.path.details.generic
+  (:shadowing-import-from ppath.details.generic
    concat
    string-type
    getenv
    getcwd
    commonprefix))
 
-(in-package py.path.details.posix)
+(in-package ppath.details.posix)
 
 (defmacro osicat-check-no-file (&body body)
   `(handler-case

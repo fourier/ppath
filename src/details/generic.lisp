@@ -1,9 +1,9 @@
-(defpackage py.path.details.generic
+(defpackage ppath.details.generic
   (:use :cl :alexandria)
   (:export path-error string-type getenv getcwd concat getpid get-temp-path
            commonprefix splitext))
 
-(in-package py.path.details.generic)
+(in-package ppath.details.generic)
 
 (define-condition path-error
     (error)
@@ -50,12 +50,12 @@
 
 (defun getpid ()
   "Return the current process id"
-  #+windows (py.path.details.nt.cffi:getpid)
-  #-windows (py.path.details.posix.cffi:getpid))
+  #+windows (ppath.details.nt.cffi:getpid)
+  #-windows (ppath.details.posix.cffi:getpid))
 
 (defun get-temp-path ()
   "Return the path to the temporary files directory"
-  #+windows (py.path.details.nt.cffi:get-temp-path)
+  #+windows (ppath.details.nt.cffi:get-temp-path)
   #-windows "/tmp/")
   
 (defun commonprefix (&rest paths)

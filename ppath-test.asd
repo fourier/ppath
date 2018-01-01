@@ -1,24 +1,24 @@
 #|
-  This file is a part of pypath project.
-  Copyright (c) 2017 Alexey Veretennikov (alexey.veretennikov@gmail.com)
+  This file is a part of ppath project.
+  Copyright (c) 2017-2018 Alexey Veretennikov (alexey.veretennikov@gmail.com)
 
   Test package.
   Usage:
-  (ql:quickload :pypath-test)
-  (asdf/operate:test-system :pypath)
+  (ql:quickload :ppath-test)
+  (asdf/operate:test-system :ppath)
 |#
 
 (in-package :cl-user)
-(defpackage pypath-test-asd
+(defpackage ppath-test-asd
   (:use :cl :asdf))
 
-(in-package :pypath-test-asd)
+(in-package :ppath-test-asd)
 
-(defsystem pypath-test
+(defsystem ppath-test
   :author "Alexey Veretennikov"
   :license "BSD"
-  :description "Test system for pypath"
-  :depends-on (:pypath
+  :description "Test system for ppath"
+  :depends-on (:ppath
                :alexandria
                :cl-fad
                :prove

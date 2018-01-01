@@ -1,8 +1,8 @@
-(defpackage py.path.details.posix.cffi
+(defpackage ppath.details.posix.cffi
   (:use :cl :cffi :alexandria)
   (:export getpid))
 
-(in-package py.path.details.posix.cffi)
+(in-package ppath.details.posix.cffi)
 
 (defun getpid()
   (osicat-posix:getpid))

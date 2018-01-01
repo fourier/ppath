@@ -1,6 +1,6 @@
-(defpackage py.path.details.nt
-  (:use :cl :alexandria :py.path.details.constants)
-  (:shadowing-import-from py.path.details.generic
+(defpackage ppath.details.nt
+  (:use :cl :alexandria :ppath.details.constants)
+  (:shadowing-import-from ppath.details.generic
                           path-error concat getcwd getenv)
   (:export splitdrive
            split
@@ -26,7 +26,7 @@
            exists
            isfile))
 
-(in-package py.path.details.nt)
+(in-package ppath.details.nt)
   
 (defun posixify (path)
   "Replaces '\\' with '/' in path"
@@ -392,7 +392,7 @@ if path is empty return current directory"
       (getcwd)
       #+windows
       (if-let (result 
-               (py.path.details.nt.cffi:get-full-path-name path))
+               (ppath.details.nt.cffi:get-full-path-name path))
           ;; strip special prefix from paths returned by windows function
           ;; GetFullPathNameW
           (if (starts-with-subseq "\\\\?\\" result)
@@ -473,15 +473,15 @@ If STARTDIR specified, use this as a current directory to resolve against."
 (defun isdir (path)
   "Determines if the path is a directory"
   (let ((FILE_ATTRIBUTE_DIRECTORY 16)
-        (attr (py.path.details.nt.cffi:get-file-attributes path)))
+        (attr (ppath.details.nt.cffi:get-file-attributes path)))
     (and (/= attr -1)
          (/= (logand 
-              (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
+              (ppath.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
              0))))
 
 
 (defmacro check-no-attrs (filename &body body)
-  `(let ((attrs (py.path.details.nt.cffi:get-file-attributes-ex ,filename)))
+  `(let ((attrs (ppath.details.nt.cffi:get-file-attributes-ex ,filename)))
      (when (not attrs)
       (error (format nil "Could not access file or directory ~s" ,filename)))
      ,@body))
@@ -491,8 +491,8 @@ If STARTDIR specified, use this as a current directory to resolve against."
 
 Raise error if the file does not exist or not available"
   (check-no-attrs filename
-    (+ (ash (py.path.details.nt.cffi:file-attribute-data-n-file-size-high attrs) 32)
-       (py.path.details.nt.cffi:file-attribute-data-n-file-size-low attrs))))
+    (+ (ash (ppath.details.nt.cffi:file-attribute-data-n-file-size-high attrs) 32)
+       (ppath.details.nt.cffi:file-attribute-data-n-file-size-low attrs))))
 
 (defun file-time-to-secs-from-epoc (ft-high ft-low)
   "Convert the pair FT-HIGH FT-LOW values from FILETIME struct to the
@@ -514,8 +514,8 @@ Raise error if the file does not exist or is inaccessible."
   (check-no-attrs path
     (multiple-value-bind (secs nsecs)
       (file-time-to-secs-from-epoc
-       (py.path.details.nt.cffi:file-attribute-data-ft-last-access-time-high attrs)
-       (py.path.details.nt.cffi:file-attribute-data-ft-last-access-time-low attrs))
+       (ppath.details.nt.cffi:file-attribute-data-ft-last-access-time-high attrs)
+       (ppath.details.nt.cffi:file-attribute-data-ft-last-access-time-low attrs))
       (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
 
 (defun getmtime (path)
@@ -526,8 +526,8 @@ Raise error if the file does not exist or is inaccessible."
   (check-no-attrs path
     (multiple-value-bind (secs nsecs)
       (file-time-to-secs-from-epoc
-       (py.path.details.nt.cffi:file-attribute-data-ft-last-write-time-high attrs)
-       (py.path.details.nt.cffi:file-attribute-data-ft-last-write-time-low attrs))
+       (ppath.details.nt.cffi:file-attribute-data-ft-last-write-time-high attrs)
+       (ppath.details.nt.cffi:file-attribute-data-ft-last-write-time-low attrs))
       (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
 
 
@@ -539,23 +539,23 @@ Raise error if the file does not exist or is inaccessible."
   (check-no-attrs path
     (multiple-value-bind (secs nsecs)
       (file-time-to-secs-from-epoc
-       (py.path.details.nt.cffi:file-attribute-data-ft-creation-time-high attrs)
-       (py.path.details.nt.cffi:file-attribute-data-ft-creation-time-low attrs))
+       (ppath.details.nt.cffi:file-attribute-data-ft-creation-time-high attrs)
+       (ppath.details.nt.cffi:file-attribute-data-ft-creation-time-low attrs))
       (+ secs (coerce (* 1e-9 nsecs) 'double-float)))))
 
 
 (defun exists (path)
   "Check if the PATH exists."
-  (let ((attrs (py.path.details.nt.cffi:get-file-attributes-ex path)))
+  (let ((attrs (ppath.details.nt.cffi:get-file-attributes-ex path)))
     (if attrs t nil)))
 
 
 (defun isfile (path)
   "Check if the PATH exists and its a file."
   (let ((FILE_ATTRIBUTE_DIRECTORY 16)
-        (attr (py.path.details.nt.cffi:get-file-attributes path)))
+        (attr (ppath.details.nt.cffi:get-file-attributes path)))
     (and (/= attr -1)
          (= (logand 
-             (py.path.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
+             (ppath.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
             0))))
 

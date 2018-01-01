@@ -1,4 +1,4 @@
-(defpackage py.path.details.nt.cffi
+(defpackage ppath.details.nt.cffi
   (:use :cl :cffi)
   (:export
    get-full-path-name
@@ -18,7 +18,7 @@
    file-attribute-data-n-file-size-high
    file-attribute-data-n-file-size-low))
 
-(in-package py.path.details.nt.cffi)
+(in-package ppath.details.nt.cffi)
 
 (cffi:define-foreign-library kernel32
   (:win32 "Kernel32"))

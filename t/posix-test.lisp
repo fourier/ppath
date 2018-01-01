@@ -1,15 +1,15 @@
 ;;;; posix-test.lisp
-;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :ppath)' in your Lisp.
 ;;
 
 (in-package :cl-user)
-(defpackage py.path.test.posix-test
+(defpackage ppath.test.posix-test
   (:use :cl
         :alexandria
-        :pypath.test.base
+        :ppath.test.base
         :prove)
-   (:shadowing-import-from :py.path.details.generic getenv concat)
-   (:shadowing-import-from :py.path.details.posix 
+   (:shadowing-import-from :ppath.details.generic getenv concat)
+   (:shadowing-import-from :ppath.details.posix 
     join
     split-components ;; helper function
     split
@@ -30,9 +30,9 @@
     abspath
     relpath))
 
-(in-package :py.path.test.posix-test)
+(in-package :ppath.test.posix-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :ppath)' in your Lisp.
 
 (plan nil)
 
@@ -86,7 +86,7 @@
   (test-input dirname "//foo//bar" "//foo"))
 
 (defun create-temp-filename ()
-  (osicat-posix:mktemp (join (py.path.details.generic:get-temp-path) "test-pypath-XXXXXX")))
+  (osicat-posix:mktemp (join (ppath.details.generic:get-temp-path) "test-ppath-XXXXXX")))
 
 (subtest "Test exists/lexists"
   (let ((file1 (create-temp-filename))
@@ -190,7 +190,7 @@
     (flet ((env (x y) (setf (gethash x env-vars) y))
            (unenv (x) (remhash x env-vars)))
       ;; mock the getenv function 
-      (with-mocked-function (py.path.details.generic::getenv
+      (with-mocked-function (ppath.details.generic::getenv
                               (lambda (name) (gethash name env-vars)))
         (clrhash env-vars)
         (env "foo" "bar")
@@ -242,9 +242,9 @@
   (test-input normpath "dir1/../.." ".."))
 
 (subtest "Test relpath"
-  (with-mocked-function (py.path.details.generic::getcwd
+  (with-mocked-function (ppath.details.generic::getcwd
                          (lambda () "/home/user/bar"))
-    (let ((curdir (cdr (split (py.path.details.generic:getcwd))))
+    (let ((curdir (cdr (split (ppath.details.generic:getcwd))))
           (abs-a (abspath "a")))
       (test-input relpath "" nil)
       (test-input relpath "a" "a")

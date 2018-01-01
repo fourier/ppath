@@ -1,19 +1,19 @@
 ;;;; generic-test.lisp
-;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :ppath)' in your Lisp.
 ;;
 
 (in-package :cl-user)
-(defpackage py.path.test.generic-test
+(defpackage ppath.test.generic-test
   (:use :cl
         :alexandria
-        :pypath.test.base
+        :ppath.test.base
         :prove)
-  (:shadowing-import-from py.path.details.generic
+  (:shadowing-import-from ppath.details.generic
    concat commonprefix splitext))
 
-(in-package :py.path.test.generic-test)
+(in-package :ppath.test.generic-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :pypath)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :ppath)' in your Lisp.
 
 (plan nil)
 

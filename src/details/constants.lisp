@@ -1,4 +1,4 @@
-(defpackage py.path.details.constants
+(defpackage ppath.details.constants
   (:use :cl :alexandria)
   (:export
    +separator+
@@ -10,7 +10,7 @@
    +up-dir+
    +secs-between-epochs+))
 
-(in-package py.path.details.constants)
+(in-package ppath.details.constants)
 
 (define-constant +separator+  #+windows #\\ #-windows #\/)
 (define-constant +sep-string+ (string +separator+) :test #'equal)

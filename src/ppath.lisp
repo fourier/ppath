@@ -1,4 +1,4 @@
-(defpackage pypath
+(defpackage ppath
   (:use :cl :alexandria)
   (:export
    abspath
@@ -32,7 +32,7 @@
    walk))
 
 
-(in-package pypath)
+(in-package ppath)
 ;;(proclaim '(optimize (safety 0) (speed 3)))
 (proclaim '(optimize (safety 3) (speed 0) (debug 3)))
 
@@ -40,40 +40,40 @@
 (defun abspath (path)
   "Convert PATH to the absolute path.
 Invariant: (abspath path) == (normpath (join (getcwd) path))."
-  #+windows (py.path.details.nt:abspath path)
+  #+windows (ppath.details.nt:abspath path)
   #-windows (error "Not implemented"))
 
 
 (defun basename (path)
   "Get the base name (filename) of PATH.
 Invariant: (basename path) == (cdr (split path))"
-  #+windows (py.path.details.nt:basename path)
-  #-windows (py.path.details.posix:basename path))
+  #+windows (ppath.details.nt:basename path)
+  #-windows (ppath.details.posix:basename path))
 
 
 (defun commonprefix (&rest paths)
   "Get the common prefix substring  of all strings in PATHS. The separators are not translated,
 so paths interpreted just as normal strings"
-  (apply #'py.path.details.generic:commonprefix paths))
+  (apply #'ppath.details.generic:commonprefix paths))
 
 
 (defun dirname (path)
   "Get the directory name of the PATH.
 Invariant: (dirname path) == (car (split path))"
-  #+windows (py.path.details.nt:basename path)
-  #-windows (py.path.details.posix:basename path))
+  #+windows (ppath.details.nt:basename path)
+  #-windows (ppath.details.posix:basename path))
 
 
 (defun exists (path)
   "Return True if path refers to an existing path. Returns nil for broken symbolic links."
-  #+windows (py.path.details.nt:exists path)
-  #-windows (py.path.details.posix:exists path))
+  #+windows (ppath.details.nt:exists path)
+  #-windows (ppath.details.posix:exists path))
   
 
 (defun lexists (path)
   "Return True if path refers to an existing path. Returns True for broken symbolic links. On Windows exists=lexists."
-  #+windows (py.path.details.nt:exists path)
-  #-windows (py.path.details.posix:lexists path))
+  #+windows (ppath.details.nt:exists path)
+  #-windows (ppath.details.posix:lexists path))
 
 
 (defun expanduser (path)
@@ -90,8 +90,8 @@ CL-USER > (expanduser \"~/dir\")
 => /Users/username/dir
 CL-USER > (expanduser \"~root/dir\")
 => /root/dir"
-  #+windows (py.path.details.nt:expanduser path)
-  #-windows (py.path.details.posix:expanduser path))
+  #+windows (ppath.details.nt:expanduser path)
+  #-windows (ppath.details.posix:expanduser path))
 
   
 (defun expandvars (path &optional (modify-in-quotes #+windows nil #-windows t))
@@ -102,62 +102,62 @@ All unknown or malformed variables ignored and kept as it is.
 The difference between Windows and Posix systems is that on Windows variables inside single quotes are not
 expanded, i.e. \"'$HOME'\" will remain \"'$HOME'\", while on Posix systems it will be expanded.
 This behavior kept for compatibility with Python."
-  #+windows (py.path.details.nt:expandvars path modify-in-quotes)
-  #-windows (py.path.details.posix:expandvars path modify-in-quotes))
+  #+windows (ppath.details.nt:expandvars path modify-in-quotes)
+  #-windows (ppath.details.posix:expandvars path modify-in-quotes))
     
 
 (defun getatime (path)
   "Return the time of last access of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
-  #+windows (py.path.details.nt:getatime path)
+  #+windows (ppath.details.nt:getatime path)
   #-windows (error "Not implemented"))
 
 
 (defun getmtime (path)
   "Return the time of last modification of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
-  #+windows (py.path.details.nt:getmtime path)
+  #+windows (ppath.details.nt:getmtime path)
   #-windows (error "Not implemented"))
 
 
 (defun getctime (path)
   "Return the system’s ctime which, on some systems (like Unix) is the time of the last metadata change, and, on others (like Windows), is the creation time for path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
-  #+windows (py.path.details.nt:getctime path)  
+  #+windows (ppath.details.nt:getctime path)  
   #-windows (error "Not implemented"))
 
 
 (defun getsize (path)
   "return the size, in bytes, of path. raise os.error if the file does not exist or is inaccessible."
-  #+windows (py.path.details.nt:getsize path)
+  #+windows (ppath.details.nt:getsize path)
   #-windows (error "Not implemented"))
 
 
 (defun isabs (path)
   "Determine if the PATH is an absolute pathname."
-  #+windows (py.path.details.nt:isabs path)
-  #-windows (py.path.details.posix:isabs path))
+  #+windows (ppath.details.nt:isabs path)
+  #-windows (ppath.details.posix:isabs path))
   
 
 (defun isfile (path)
   "return true if path is an existing regular file. this follows symbolic links, so both islink() and isfile() can be true for the same path."
-  #+windows (py.path.details.nt:isfile path)
+  #+windows (ppath.details.nt:isfile path)
   #-windows (error "Not implemented"))
 
 
 (defun isdir (path)
   "Determine if PATH is an existing directory. If the PATH is symlink then the invariant
 (and (islink PATH) (isdir PATH)) holds."
-  #+windows (py.path.details.nt:isdir path)
+  #+windows (ppath.details.nt:isdir path)
   #-windows (error "Not implemented"))
 
 (defun islink (path)
   "Determine if the PATH is symbolic link(on OS where symbolic links supported, otherwise always return nil)."
-  #+windows (py.path.details.nt:islink path)
+  #+windows (ppath.details.nt:islink path)
   #-windows (error "Not implemented"))
   
 
 ;; TODO: documentation for functions below
 (defun ismount (path)
   "Return t if pathname PATH is a mount point: a point in a file system where a different file system has been mounted. the function checks whether path‘s parent, path/.., is on a different device than path, or whether path/.. and path point to the same i-node on the same device — this should detect mount points for all unix and posix variants."
-  #+windows (py.path.details.nt:ismount path)
+  #+windows (ppath.details.nt:ismount path)
   #-windows (error "Not implemented"))
 
 
@@ -166,14 +166,14 @@ This behavior kept for compatibility with Python."
   "Join one or more path components intelligently. The return value is the concatenation of PATH and any members of PATHS with exactly one directory separator following each non-empty part except the last, meaning that the result will only end in a separator if the last part is empty. If a component is an absolute path, all previous components are thrown away and joining continues from the absolute path component.
 
 On windows, the drive letter is not reset when an absolute path component (e.g., \"\foo\") is encountered. If a component contains a drive letter, all previous components are thrown away and the drive letter is reset. Note that since there is a current directory for each drive, (join \"c:\" \"foo\") represents a path relative to the current directory on drive c: (c:foo), not c:\foo."
-  #+windows (apply #'py.path.details.nt:join path paths)
-  #-windows (apply #'py.path.details.posix:join path paths))
+  #+windows (apply #'ppath.details.nt:join path paths)
+  #-windows (apply #'ppath.details.posix:join path paths))
 
 
 (defun normcase (path)
   "Normalize the case of a pathname. On unix and mac os x, this returns the path unchanged; on windows, it lowercases PATH and converts forward slashes to backward slashes."
-  #+windows (py.path.details.nt:normcase path)
-  #-windows (py.path.details.posix:normcase path))
+  #+windows (ppath.details.nt:normcase path)
+  #-windows (ppath.details.posix:normcase path))
 
 (defun normpath (path)
   "Normalize path, removing unnecessary/redundant parts, like dots,
@@ -181,20 +181,20 @@ double slashes, etc. Expanding .. as well.
 Example:
 ///..//./foo/.//bar => /foo/bar
 On Windows it additionally converts forward slashes to backward slashes."
-  #+windows (py.path.details.nt:normpath path)
-  #-windows (py.path.details.posix:normpath path))
+  #+windows (ppath.details.nt:normpath path)
+  #-windows (ppath.details.posix:normpath path))
 
 
 (defun realpath(path)
   "Return the canonical path of the specified filename, eliminating any symbolic links encountered in the path (if they are supported by the operating system)."
-  #+windows (py.path.details.nt:realpath path)
+  #+windows (ppath.details.nt:realpath path)
   #-windows (error "Not implemented"))
 
 (defun relpath (path &optional (start "."))
   "Return a relative filepath to PATH either from the current directory or from an optional START directory. This is a path computation: the filesystem is not accessed to confirm the existence or nature of path or start.
 
 START defaults to current directory '.'"
-  #+windows (py.path.details.nt:relpath path start)
+  #+windows (ppath.details.nt:relpath path start)
   #-windows (error "Not implemented"))
 
 
@@ -213,23 +213,23 @@ START defaults to current directory '.'"
 
 (defun split (path)
   "split the pathname path into a pair, (head, tail) where tail is the last pathname component and head is everything leading up to that. the tail part will never contain a slash; if path ends in a slash, tail will be empty. if there is no slash in path, head will be empty. if path is empty, both head and tail are empty. trailing slashes are stripped from head unless it is the root (one or more slashes only). in all cases, join(head, tail) returns a path to the same location as path (but the strings may differ). also see the functions dirname() and basename()."
-  #+windows (py.path.details.nt:split path)
-  #-windows (py.path.details.posix:split path))
+  #+windows (ppath.details.nt:split path)
+  #-windows (ppath.details.posix:split path))
   
 
 (defun splitdrive (path)
   "split the pathname path into a pair (drive, tail) where drive is either a drive specification or the empty string. on systems which do not use drive specifications, drive will always be the empty string. in all cases, drive + tail will be the same as path."
-  #+windows (py.path.details.nt:splitdrive path)
+  #+windows (ppath.details.nt:splitdrive path)
   #-windows (error "Not implemented"))
 
 (defun splitext(path)
   "Split PATH to root and extension. Return a pair (root . ext)
 Invariant: (concatenate 'string root ext) == path"
-  (py.path.details.generic:splitext path))
+  (ppath.details.generic:splitext path))
 
 (defun splitunc (path)
   "split the pathname path into a pair (unc, rest) so that unc is the unc mount point (such as r'\\host\mount'), if present, and rest the rest of the path (such as r'\path\file.ext'). for paths containing drive letters, unc will always be the empty string."
-  #+windows (py.path.details.nt:splitunc path)
+  #+windows (ppath.details.nt:splitunc path)
   #-windows (error "Not implemented"))
 
 
