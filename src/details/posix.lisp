@@ -18,7 +18,12 @@
            split
            splitdrive
            splitunc)
-  (:shadowing-import-from py.path.details.generic concat string-type getenv))
+  (:shadowing-import-from py.path.details.generic
+   concat
+   string-type
+   getenv
+   getcwd
+   commonprefix))
 
 (in-package py.path.details.posix)
 
@@ -41,7 +46,7 @@
          ;; just concat and continue to join
          (apply #'join (concat path (car paths)) (cdr paths)))
         (t ;; have to add "/" in between
-         (apply #'join (concat path "/" (car paths)) (cdr paths)))))
+         (apply #'join (concat path +sep-string+ (car paths)) (cdr paths)))))
 
 
 (defun split-components (path)
@@ -236,7 +241,7 @@ Return PATH unchanged if unable to expand"
   ;; position of the first slash in the string
   (let* ((slash (or (position +separator+ path) (length path)))
          ;; home directory without trailing /
-         (homedir (string-right-trim "/"
+         (homedir (string-right-trim +sep-string+
                                      ;; if the path like ~/ then its our user
                                      (if (= slash 1)
                                          ;; get the value from environment variable HOME if possible
@@ -249,7 +254,7 @@ Return PATH unchanged if unable to expand"
                                          (nth 5 (getpwnam (subseq path 1 slash)))))))
     ;; construct the path by concatenating home directory and the rest
     ;; of the string, or just return slash if both are emtpy
-    (or-strings (concat homedir (subseq path slash)) "/")))
+    (or-strings (concat homedir (subseq path slash)) +sep-string+)))
                
     
 
@@ -314,7 +319,7 @@ Example:
     ;; process them. 
     ;; First consider tripple and more slashes as a single slash
     (when (starts-with-subseq "///" (car components))
-      (setf (car components) "/"))
+      (setf (car components) +sep-string+))
     (let* ((head (when (starts-with +separator+ (car components)) (car components)))
            ;; next remove slashes and dots
            (tail
@@ -355,9 +360,8 @@ Example:
 
 (defun abspath (path)
   "Return an absolute path."
-  ;; requires normpath
-  path)
-
+  (normpath (join (getcwd) path)))
+  
 
 (defun realpath(filename)
   "Return real path of the file, following symlinks if necessary"
@@ -365,10 +369,38 @@ Example:
   filename)
 
 
-(defun relpath (path &optional (start "."))
+(defun relpath (path &optional (start +current-dir+))
   "Convert PATH from absolute to relative"
-  ;; requires abspath
-  path)
+  ;; sanity check
+  (when (emptyp path)
+    (return-from relpath nil))
+  ;; get the common prefix of absolutized paths
+  (let* ((abspath (split-components (abspath path)))
+         (absstart (split-components (abspath start)))
+         (common (commonprefix abspath absstart)))
+    (when (emptyp common)
+      (return-from relpath +current-dir+))
+    ;; create common string
+    (let* ((common-components (count-if-not (curry #'equal +sep-string+) common))
+           ;; number of directories we have to go from the start
+           ;; to reach the common directory entry
+           (dirs-up (- (count-if-not (curry #'equal +sep-string+) absstart)
+                       common-components))
+           ;; position where the abspath and common path diverges
+           (mismatch (mismatch abspath common))
+           ;; get the unique path part, or just whole if they match
+           (unique (if mismatch (subseq abspath mismatch) common)))
+      (cond ((and (not mismatch) (> dirs-up 0))
+             (format nil "~{~A~^/~}"
+                     (make-list dirs-up :initial-element +up-dir+)))
+            ((not mismatch) +current-dir+)
+            ((> dirs-up 0)
+             (format nil "~{~A~^/~}/~A"
+                     (make-list dirs-up :initial-element +up-dir+)
+                     (apply #'concat unique)))
+            ((starts-with +sep-string+ unique :test #'equal)
+             (apply #'concat (cdr unique)))
+            (t (apply #'concat unique))))))
 
 
 (defun ismount (path)
@@ -376,6 +408,7 @@ Example:
   ;; needed realpath to implement
   )
   
+
 
 
 

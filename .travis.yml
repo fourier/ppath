@@ -5,7 +5,6 @@ env:
   matrix:
     - LISP=sbcl
     - LISP=ccl
-# by some reason 32bit versions lacks necessary libraries on TravisCI    
     - LISP=ccl32
     - LISP=ecl
     - LISP=allegro

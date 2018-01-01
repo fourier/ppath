@@ -26,7 +26,9 @@
     getpwnam ; helper function   
     expanduser
     expandvars
-    normpath))
+    normpath
+    abspath
+    relpath))
 
 (in-package :py.path.test.posix-test)
 
@@ -238,6 +240,30 @@
   (test-input normpath "../../../dir/../dir1/../dir2" "../../../dir2")
   (test-input normpath "/dir1/.." "/")
   (test-input normpath "dir1/../.." ".."))
+
+(subtest "Test relpath"
+  (with-mocked-function (py.path.details.generic::getcwd
+                         (lambda () "/home/user/bar"))
+    (let ((curdir (cdr (split (py.path.details.generic:getcwd))))
+          (abs-a (abspath "a")))
+      (test-input relpath "" nil)
+      (test-input relpath "a" "a")
+      (test-input relpath abs-a "a")
+      (test-input relpath "a/b" "a/b")
+      (test-input relpath "../a/b" "../a/b")
+      (test-input relpath '("a" "../b") (concat "../" curdir "/a"))
+      (test-input relpath '("a/b" "../c") (concat "../" curdir "/a/b"))
+      (test-input relpath '("a" "b/c") "../../a")
+      (test-input relpath '("a" "a") ".")
+      (test-input relpath '("/foo/bar/bat" "/x/y/z") "../../../foo/bar/bat")
+      (test-input relpath '("/foo/bar/bat" "/foo/bar") "bat")
+      (test-input relpath '("/foo/bar/bat" "/") "foo/bar/bat")
+      (test-input relpath '("/" "/foo/bar/bat") "../../..")
+      (test-input relpath '("/foo/bar/bat" "/x") "../foo/bar/bat")
+      (test-input relpath '("/x" "/foo/bar/bat") "../../../x")
+      (test-input relpath '("/" "/") ".")
+      (test-input relpath '("/a" "/a") ".")
+      (test-input relpath '("/a/b" "/a/b") "."))))
 
 
 (finalize)

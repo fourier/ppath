@@ -2,6 +2,7 @@
   (:use :cl :alexandria)
   (:export
    +separator+
+   +sep-string+
    +posix-separator+
    +unc-prefix+
    +path-separator+
@@ -12,6 +13,7 @@
 (in-package py.path.details.constants)
 
 (define-constant +separator+  #+windows #\\ #-windows #\/)
+(define-constant +sep-string+ (string +separator+))
 (define-constant +posix-separator+ #\/)
 (define-constant +unc-prefix+ "//" :test #'equal)
 (define-constant +path-separator+ #+windows #\; #-windows #\:)

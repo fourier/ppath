@@ -58,11 +58,15 @@
   #+windows (py.path.details.nt.cffi:get-temp-path)
   #-windows "/tmp/")
   
-(defun commonprefix (&rest  paths)
-  "Get the common prefix substring  of all strings in PATHS"
+(defun commonprefix (&rest paths)
+  "Get the common prefix substring  of all strings in PATHS.
+PATHS components could also be lists of strings, like results of
+SPLIT operation on paths.
+The trailing slash is omitted.
+If no common prefix return empty string."
   (unless paths (return-from commonprefix ""))
   (reduce (lambda (x y)
-            (subseq x 0 (or (mismatch x y) (length x)))) paths))
+            (subseq x 0 (or (mismatch x y :test #'equal) (length x)))) paths))
 
 
 (defun splitext (path)
