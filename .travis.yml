@@ -26,5 +26,5 @@ install:
     fi
 
 script:
-  - cl -l prove -e '(or (prove:run :pypath-test) (uiop:quit -1))'
+  - cl -l prove -e '(or (prove:run :ppath-test) (uiop:quit -1))'
 

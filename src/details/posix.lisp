@@ -404,7 +404,7 @@ Example:
 
 
 (defun ismount (path)
-  "Determine if the PATH is mount point"
+  "Determine if the PATH is a mount point"
   ;; needed realpath to implement
   )
   
