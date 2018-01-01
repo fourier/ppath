@@ -189,7 +189,7 @@ On Windows it additionally converts forward slashes to backward slashes."
 (defun realpath(path)
   "Return the canonical path of the specified filename, eliminating any symbolic links encountered in the path (if they are supported by the operating system)."
   #+windows (ppath.details.nt:realpath path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:realpath path))
 
 (defun relpath (path &optional (start "."))
   "Return a relative filepath to PATH either from the current directory or from an optional START directory. This is a path computation: the filesystem is not accessed to confirm the existence or nature of path or start.

@@ -1,14 +1,32 @@
 (defpackage ppath.details.posix.cffi
   (:use :cl :cffi :alexandria)
-  (:export getpid))
+  (:export getpid realpath))
 
 (in-package ppath.details.posix.cffi)
+
+(define-constant +path-max+ 4096)
+
 
 (defun getpid()
   (osicat-posix:getpid))
 
 
 ;; char * realpath(const char *restrict file_name, char *restrict resolved_name)
+(defcfun ("realpath" crealpath) :pointer
+  (path :string)
+  (resloved-name :pointer))
+
+(defun realpath (path)
+  "Wrapper around realpath function from <stdlib.h>"
+  (with-foreign-pointer (resolved-name +path-max+)
+    (let ((result (crealpath path resolved-name)))
+      (when (not (null-pointer-p result))
+        (multiple-value-bind (string length)
+            (foreign-string-to-lisp resolved-name)
+          (declare (ignore length))
+          string)))))
+
+;;;;;;;;;;;;;;;;; auxulary functions, needed for debugging
 
 (defun array-to-hex (arr)
   ;; a SLOW version used only for dumping output to logs etc
