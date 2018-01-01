@@ -410,8 +410,22 @@ Example:
 
 (defun ismount (path)
   "Determine if the PATH is a mount point"
-  ;; needed realpath to implement
-  )
+  ;; WARNING: not tested!
+  ;; follows os.path implementation
+  (when (islink path)
+    (return-from ismount nil))
+  (osicat-check-no-file
+    (let ((stat1 (osicat-posix:lstat path))
+          ;; one directory up
+          (stat2 (osicat-posix:lstat (realpath (join path "..")))))
+      (cond ((not (eql (slot-value stat1 'osicat-posix::dev)
+                       (slot-value stat2 'osicat-posix::dev)))
+             t)
+            ((eql (slot-value stat1 'osicat-posix::ino)
+                  (slot-value stat2 'osicat-posix::ino))
+             t)
+            (t nil)))))
+
   
 
 (defun isdir (path)

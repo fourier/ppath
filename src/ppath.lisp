@@ -159,7 +159,7 @@ This behavior kept for compatibility with Python."
 (defun ismount (path)
   "Return t if pathname PATH is a mount point: a point in a file system where a different file system has been mounted. the function checks whether path‘s parent, path/.., is on a different device than path, or whether path/.. and path point to the same i-node on the same device — this should detect mount points for all unix and posix variants."
   #+windows (ppath.details.nt:ismount path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:ismount path))
 
 
 

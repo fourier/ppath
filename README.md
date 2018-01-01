@@ -64,6 +64,8 @@ Limitations: On Win32 assumed OS versions with Unicode support.
    - **normpath**
    - **abspath**
    - **relpath**
+   - **realpath**
+   - **ismount**
 
 ## Not Implemented functions:
  - samestat (makes no sense since osicat's wrapper around stat()/fstat() 
@@ -76,8 +78,8 @@ Additionally:
    - samefile
    - samestat
  - From posix module:
-   - realpath
-   - ismount
+   - isdir
+   - isfile
 
 ## Author
 
