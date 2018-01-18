@@ -15,17 +15,22 @@
   (:use :cl :asdf))
 (in-package :ppath-asd)
 
+(eval-when (:load-toplevel :execute)
+  (operate 'load-op 'trivial-features)
+  (operate 'load-op 'cffi-grovel))
+
 (defsystem #:ppath
   :version "0.1"
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
   :depends-on (#:alexandria            ; general utilities - Public domain
                #:cffi                  ; to access dlls (kernel32) - MIT
-               #-(or windows win32 os-windows)
+               #-windows
                #:osicat                ; for sys/stat - MIT
                #:uiop                  ; os operations like getcwd - MIT
                #:trivial-features      ; consistent *features* - MIT
                #:split-sequence)       ; general split - public domain
+  :defsystem-depends-on (#:cffi-grovel)
   :components ((:module "src"
                 :serial t
                 :components
@@ -33,11 +38,14 @@
                   :serial t
                   :components
                   ((:file "constants")
-                   #+(or windows win32 os-windows) (:file "nt-cffi")
-                   #-(or windows win32 os-windows) (:file "posix-cffi")
+                   #+windows (:file "nt-cffi")
+                   #-windows (:file "posix-cffi-package")
+                   #-windows (:cffi-grovel-file "posix-cffi-grovelling")
+                   #-windows (:cffi-wrapper-file "posix-cffi-wrappers")
+                   #-windows (:file "posix-cffi")
                    (:file "generic")
-                   #+(or windows win32 os-windows) (:file "nt")
-                   #-(or windows win32 os-windows) (:file "posix")))
+                   #+windows (:file "nt")
+                   #-windows (:file "posix")))
                  (:file "ppath"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description
