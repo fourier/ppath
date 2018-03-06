@@ -3,7 +3,12 @@
   Copyright (c) 2017-2018 Alexey Veretennikov (alexey.veretennikov@gmail.com)
 
   Test package.
+  prove-asdf shall be installed in advance, i.e. via
+
+  (ql:quickload "prove-asdf")
+
   Usage:
+  
   (ql:quickload :ppath-test)
   (asdf/operate:test-system :ppath)
 |#

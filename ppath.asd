@@ -16,8 +16,7 @@
 (in-package :ppath-asd)
 
 (eval-when (:load-toplevel :execute)
-  (operate 'load-op 'trivial-features)
-  (operate 'load-op 'cffi-grovel))
+  (operate 'load-op 'trivial-features))
 
 (defsystem #:ppath
   :version "0.1"
@@ -39,9 +38,6 @@
                   :components
                   ((:file "constants")
                    #+windows (:file "nt-cffi")
-                   #-windows (:file "posix-cffi-package")
-                   #-windows (:cffi-grovel-file "posix-cffi-grovelling")
-                   #-windows (:cffi-wrapper-file "posix-cffi-wrappers")
                    #-windows (:file "posix-cffi")
                    (:file "generic")
                    #+windows (:file "nt")
