@@ -26,5 +26,6 @@ install:
     fi
 script:
   - cl -e '(ql:quickload :prove-asdf)'
+  - cl -e '(ql:quickload :trivial-features)'
   - cl -l prove -e '(or (prove:run :ppath-test) (uiop:quit -1))'
 
