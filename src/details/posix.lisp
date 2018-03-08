@@ -426,20 +426,24 @@ Example:
              t)
             (t nil)))))
 
-  
 
 (defun isdir (path)
   "Determine if the PATH is a directory"
   (osicat-check-no-file
-    (let ((stat (osicat-posix:stat path)))
-      (if t t nil))))
+    (if-let ((stat (osicat-posix:stat path)))
+      (= osicat-posix:s-ifdir
+         (logand (osicat-posix:stat-mode stat)
+                 osicat-posix:s-ifdir)))))
       
 
 (defun isfile (path)
   "Determine if the PATH is a regular file"
   (osicat-check-no-file
-    (let ((stat (osicat-posix:stat path)))
-      (if t t nil))))
+    (if-let ((stat (osicat-posix:stat path)))
+      (= osicat-posix:s-ifreg
+         (logand (osicat-posix:stat-mode stat)
+                 osicat-posix:s-ifreg)))))
+
 
 
 (defun getsize (path)

@@ -138,7 +138,7 @@ This behavior kept for compatibility with Python."
   
 
 (defun isfile (path)
-  "return true if path is an existing regular file. this follows symbolic links, so both islink() and isfile() can be true for the same path."
+  "Determine if the PATH is a regular file. Returns also t for symbolic links."
   #+windows (ppath.details.nt:isfile path)
   #-windows (ppath.details.posix:isfile path))
 
