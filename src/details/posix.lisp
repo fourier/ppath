@@ -371,7 +371,7 @@ Example:
   "Return real path of the file, following symlinks if necessary"
   ;; implementation does not follow python's implementation and
   ;; just a wrapper around stdlib's BSD/linux realpath
-  (ppath.details.posix.cffi:realpath filename))
+  (osicat-posix:realpath filename))
 
 
 (defun relpath (path &optional (start +current-dir+))
