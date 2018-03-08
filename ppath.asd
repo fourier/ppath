@@ -29,7 +29,6 @@
                #:uiop                  ; os operations like getcwd - MIT
                #:trivial-features      ; consistent *features* - MIT
                #:split-sequence)       ; general split - public domain
-  :defsystem-depends-on (#:cffi-grovel)
   :components ((:module "src"
                 :serial t
                 :components
