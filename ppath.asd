@@ -15,16 +15,12 @@
   (:use :cl :asdf))
 (in-package :ppath-asd)
 
-(eval-when (:load-toplevel :execute)
-  (operate 'load-op 'trivial-features))
-
 (defsystem #:ppath
   :version "0.1"
   :author "Alexey Veretennikov"
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
   :depends-on (#:alexandria            ; general utilities - Public domain
                #:cffi                  ; to access dlls (kernel32) - MIT
-               #-windows
                #:osicat                ; for sys/stat - MIT
                #:uiop                  ; os operations like getcwd - MIT
                #:trivial-features      ; consistent *features* - MIT
@@ -36,11 +32,11 @@
                   :serial t
                   :components
                   ((:file "constants")
-                   #+windows (:file "nt-cffi")
-                   #-windows (:file "posix-cffi")
+                   #+(or windows win32 os-windows) (:file "nt-cffi")
+                   #-(or windows win32 os-windows) (:file "posix-cffi")
                    (:file "generic")
-                   #+windows (:file "nt")
-                   #-windows (:file "posix")))
+                   #+(or windows win32 os-windows) (:file "nt")
+                   #-(or windows win32 os-windows) (:file "posix")))
                  (:file "ppath"))))
   :description "A Common Lisp implementation of the Python's os.path module"
   :long-description

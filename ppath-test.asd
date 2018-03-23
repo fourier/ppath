@@ -7,6 +7,10 @@
 
   (ql:quickload "prove-asdf")
 
+  Its a known limitation of quicklisp, it does not
+  automatically fetches systems during the loading
+  of system definition.
+
   Usage:
   
   (ql:quickload :ppath-test)
