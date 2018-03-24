@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/fourier/ppath.svg?branch=master)](https://travis-ci.org/fourier/ppath)
-# A Common Lisp implementation of the Python's os.path module
+# A Common Lisp path strings manipulation library.
 
-The intention of this package is to reimplemenent all the functions from Python's **path** module in Common Lisp. 
+The intention of this package is to reimplemenent all the functionality and APIs from Python's **path** module in Common Lisp, but not limited to this.
+
+The philosophy behind is to use simple strings and "dumb" string manipulation functions to handle paths and filenames.
 
 Supported [tested] compilers: LispWorks (6.1PE and 7.0), CCL, SBCL.
 Tested on the following platforms:
@@ -15,19 +17,21 @@ Tested on the following platforms:
 Limitations: On Win32 assumed OS versions with Unicode support.
 
 ### Linux
-- SBCL 1.3.1
+- SBCL 1.3.14
+- CCL 1.11.5
 
 ### OSX
 - Lispworks 7.0 Hobbyist DV Edition 32bit
 - Clozure CL Version 1.11
+
+## Usage
+The library consist of 3 packages: *ppath*, *ppath-nt* and *ppath-posix*. The generic package *ppath* forwards calls to appropriate OS-dependent library. It exports only functions available for the current platform.
 
 ## Implemented functions
  - Functions implemented for Win32 module:
    - **split**
    - **splitunc**
    - **splitdrive**
-   - **split**
-   - **splitunc**
    - **isabs**
    - **normcase**
    - **basename**
@@ -72,12 +76,7 @@ Limitations: On Win32 assumed OS versions with Unicode support.
 ## Not Implemented functions:
  - samestat (makes no sense since osicat's wrapper around stat()/fstat() 
    calls is used)
- - walk (there are already couple of good implementation around)
-
-Additionally:
-
- - From ntpath module:
-   - samefile
+ - walk (there is already a couple of good implementations around)
 
 ## Author
 
@@ -85,7 +84,6 @@ Additionally:
 
 ## Copyrights
 
- - pypath CL library Copyright (c) 2017 Alexey Veretennikov (alexey.veretennikov@gmail.com)
  - Python and Python documentation Copyright (c)  1990-2017, Python Software Foundation. 
  - Parts of Python documentation on https://docs.python.org/2.7/library/os.path.html were used and adapted when necessary to the current implementation.
 

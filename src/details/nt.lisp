@@ -2,6 +2,7 @@
   (:use :cl :alexandria :ppath.details.constants)
   (:shadowing-import-from ppath.details.generic
                           path-error concat getcwd getenv)
+  (:nicknames ppath-nt)
   (:export splitdrive
            split
            splitunc
@@ -559,29 +560,3 @@ Raise error if the file does not exist or is inaccessible."
              (ppath.details.nt.cffi:get-file-attributes path) FILE_ATTRIBUTE_DIRECTORY)
             0))))
 
-
-(defun samestat(st1 st2)
-  "Tests if 2 osicat-posix:stat structs are the same"
-  (and (equalp (slot-value st1 'osicat-posix::atime)
-               (slot-value st2 'osicat-posix::atime))
-       (equalp (slot-value st1 'osicat-posix::ctime)
-               (slot-value st2 'osicat-posix::ctime))
-       (equalp (slot-value st1 'osicat-posix::mtime)
-               (slot-value st2 'osicat-posix::mtime))
-       (equalp (slot-value st1 'osicat-posix::blocks)
-               (slot-value st2 'osicat-posix::blocks))
-       (equalp (slot-value st1 'osicat-posix::ino)
-               (slot-value st2 'osicat-posix::ino))
-       (equalp (slot-value st1 'osicat-posix::ino)
-               (slot-value st2 'osicat-posix::ino))
-       (equalp (slot-value st1 'osicat-posix::mode)
-               (slot-value st2 'osicat-posix::mode))
-       (equalp (slot-value st1 'osicat-posix::size)
-               (slot-value st2 'osicat-posix::size))))
-
-
-(defun samefile (path1 path2)
-  "Determine if PATH1 and PATH2 are the paths to the same file.
-If one of the paths is symlink to another they considered the same."
-  (samestat (osicat-posix:stat path1)
-            (osicat-posix:stat path2)))

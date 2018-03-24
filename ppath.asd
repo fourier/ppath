@@ -38,7 +38,7 @@
                    #+(or windows win32 os-windows) (:file "nt")
                    #-(or windows win32 os-windows) (:file "posix")))
                  (:file "ppath"))))
-  :description "A Common Lisp implementation of the Python's os.path module"
+  :description "A Common Lisp path handling library based on Python's os.path module"
   :long-description
   #.(with-open-file (stream (merge-pathnames
                              #p"README.md"

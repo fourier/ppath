@@ -1,5 +1,6 @@
 (defpackage ppath.details.posix
   (:use :cl :alexandria :ppath.details.constants)
+  (:nicknames ppath-posix)
   (:export abspath
            basename
            exists
