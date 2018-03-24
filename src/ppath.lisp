@@ -110,19 +110,19 @@ This behavior kept for compatibility with Python."
 (defun getatime (path)
   "Return the time of last access of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
   #+windows (ppath.details.nt:getatime path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:getatime path))
 
 
 (defun getmtime (path)
   "Return the time of last modification of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
   #+windows (ppath.details.nt:getmtime path)
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:getmtime path))
 
 
 (defun getctime (path)
   "Return the system’s ctime which, on some systems (like Unix) is the time of the last metadata change, and, on others (like Windows), is the creation time for path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
   #+windows (ppath.details.nt:getctime path)  
-  #-windows (error "Not implemented"))
+  #-windows (ppath.details.posix:getctime path))
 
 
 (defun getsize (path)

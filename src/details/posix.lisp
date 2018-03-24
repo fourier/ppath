@@ -22,7 +22,10 @@
            sameopenfile
            split
            splitdrive
-           splitunc)
+           splitunc
+           getatime
+           getctime
+           getmtime)
   (:shadowing-import-from ppath.details.generic
    concat
    string-type
@@ -35,7 +38,9 @@
 (defmacro osicat-check-no-file (&body body)
   `(handler-case
       (progn ,@body)
-    (osicat-posix:enoent (e) nil)))
+     (osicat-posix:enoent (e)
+       (declare (ignore e))
+       nil)))
 
 
 (defun join (path &rest paths)
@@ -453,5 +458,28 @@ Example:
     (let ((stat (osicat-posix:stat path)))
       (slot-value stat 'osicat-posix::size))))
   
+
+(defun getctime (path)
+  "Return the last status change time for the PATH.
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z)."
+  (osicat-check-no-file
+    (when-let ((stat (osicat-posix:stat path)))
+      (slot-value stat 'osicat-posix::ctime))))
+
+
+(defun getmtime (path)
+  "Return the last modification time for the PATH.
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z)."
+  (osicat-check-no-file
+    (when-let ((stat (osicat-posix:stat path)))
+      (slot-value stat 'osicat-posix::mtime))))
+
+
+(defun getatime (path)
+  "Return the last access time for the PATH.
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z)."
+  (osicat-check-no-file
+    (when-let ((stat (osicat-posix:stat path)))
+      (slot-value stat 'osicat-posix::atime))))
 
 
