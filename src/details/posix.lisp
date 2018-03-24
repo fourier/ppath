@@ -21,8 +21,6 @@
            samefile
            sameopenfile
            split
-           splitdrive
-           splitunc
            getatime
            getctime
            getmtime)
@@ -113,13 +111,6 @@ If the path ends with \"/\", the file component is empty"
   "Normalize case of PATH.
 On case-sensitive file systems (default on Linux and OSX) just returns PATH unchanged"
   path)
-
-
-(defun splitdrive (path)
-  "Split PATH into drive and path.
-Doing nothing on POSIX, drive component will be empty"
-  (cons "" path))
-
 
 (defun basename (path)
   "Returns filename component of the PATH"

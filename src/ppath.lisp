@@ -23,12 +23,12 @@
    normpath
    realpath
    relpath
-   samefile
-   sameopenfile
+   #-windows samefile
+   #-windows sameopenfile
    split
    splitdrive
    splitext
-   splitunc))
+   #+windows splitunc))
 
 
 (in-package ppath)
