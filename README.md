@@ -276,7 +276,7 @@ Return the relative version of the ```path```.
 If ```startdir``` provided, use this as a current directory to resolve against.
 
 ### *function* ppath:samefile (```path1 path2```)
-Determine if PATH1 and PATH2 are the paths to the same file.
+Determine if ```path1``` and ```path2``` are the paths to the same file.
 If one of the paths is symlink to another they considered the same.
     
 *Not available on Windows.*
@@ -286,80 +286,66 @@ Determine if the open file streams ```stream1``` and ```stream2``` are of the sa
     
 *Not available on Windows.*
     
-### *function* PPATH:SPLIT
-  [symbol]
+### *function* ppath:split (```path```)
+Split the path into the pair ```(directory . filename)```.
+If the path ends with "/", the file component is empty.
+    
+On Windows, if the head is a drive name, the slashes are not stripped from it.
+    
+Examples:
+(On Windows)
+```lisp
+CL-USER > (split "c:\\Sources\\lisp")
+=> ("c:\\Sources" . "lisp")
+CL-USER > (split "\\\\host-name\\share-name\\dir1\\dir2")
+=> ("\\\\host-name\\share-name\\dir1" . "dir2")
+```
 
-SPLIT names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Split the path into the pair (directory . filename).
-    If the path ends with "/", the file component is empty
-    
-    On Windows, if the head is a drive name, the slashes are not stripped from it.
-    
-    Examples:
-    (On Windows)
-    CL-USER > (split "c:\\Sources\\lisp")
-    => ("c:\\Sources" . "lisp")
-    CL-USER > (split "\\\\host-name\\share-name\\dir1\\dir2")
-    => ("\\\\host-name\\share-name\\dir1" . "dir2")
-    (on POSIX)
-    CL-USER > (split "/foo/bar")
-    => ("/foo" . "bar")
-    CL-USER > (split "/foo/bar/")
-    => ("/foo/bar/" . "")
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:SPLITDRIVE
-  [symbol]
+(on POSIX)
+```lisp
+CL-USER > (split "/foo/bar")
+=> ("/foo" . "bar")
+CL-USER > (split "/foo/bar/")
+=> ("/foo/bar/" . "")
+```
 
-SPLITDRIVE names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) (VALUES CONS &OPTIONAL))
-  Documentation:
-    Split a path to the drive (with letter) and path after drive.
-    This function also parses the UNC paths, providing \\hostname\mountpoint
-    as a drive part.
-    
-    On POSIX drive is an empty string.
-    
-    Invariant: (concatenate 'string (car (splitdrive path)) (cdr (splitdrive path))) == path
-    
-    Example:
-    CL-USER > (splitdrive "C:\Sources\lisp")
-    => ("C:" "\Sources\lisp")
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:SPLITEXT
-  [symbol]
+### *function* ppath:splitdrive (```path```)
+Split a ```path``` to the drive (with letter) and path after the drive.
 
-SPLITEXT names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Split ```path``` to root and extension. Return a pair (root . ext)
-    If the filename component of the ```path``` starts with dot, like .cshrc, considering no extension.
-    Invariant: (concatenate 'string root ext) == path
+This function also parses the UNC paths, providing \\hostname\mountpoint as a drive part.
     
-    Examples:
-    CL-USER > (splitext "~/test.cshrc")
-    => ("~/test" . ".cshrc")
-    CL-USER > (splitext "~/notes.txt")
-    => ("~/notes" . ".txt")
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:SPLITUNC
-  [symbol]
-
-SPLITUNC names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) NIL)
-  Documentation:
-    Split a pathname with UNC path. UNC syntax:
-    \\host-name\share-name\file_path
-    Return a cons pair (\\host-name\share-name . \file_path)
+On POSIX drive is an empty string.
     
-    Not available on POSIX.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
+Invariant: ```(concatenate 'string (car (splitdrive path)) (cdr (splitdrive path))) == path```
+    
+Example:
+```lisp
+CL-USER > (splitdrive "C:\Sources\lisp")
+=> ("C:" "\Sources\lisp")
+```
 
+### *function* ppath:splitext (```path```)
+Split ```path``` to root and extension. Return a pair ```(root . ext)```
+
+If the filename component of the ```path``` starts with dot, like ```.cshrc```, considering no extension.
+
+Invariant: ```(concatenate 'string root ext) == path```
+    
+Examples:
+```lisp
+CL-USER > (splitext "~/test.cshrc")
+=> ("~/test" . ".cshrc")
+CL-USER > (splitext "~/notes.txt")
+=> ("~/notes" . ".txt")
+```
+
+### *function* ppath:splitunc (```path```)
+Split a pathname with UNC path. UNC syntax: ```\\host-name\share-name\file_path```
+
+Return a cons pair ```("\\host-name\share-name" . "\file_path")```
+    
+*Not available on POSIX.*
+    
 
 ## Author
 
