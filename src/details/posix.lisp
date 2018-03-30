@@ -98,7 +98,8 @@ If the path ends with \"/\", the file component is empty"
                           ;; is bigger than 1
                           (if (> (length path-comps) 1)
                               (butlast path-comps)
-                              path-comps)) (last-elt components)))))))
+                              path-comps))
+                   (last-elt components)))))))
 
 
 (defun isabs (path)
@@ -361,7 +362,11 @@ Example:
 
 (defun abspath (path)
   "Return an absolute path."
-  (normpath (join (getcwd) path)))
+  (normpath
+   (if (not (isabs path))
+       (join (getcwd) path)
+       path)))
+
   
 
 (defun realpath(filename)

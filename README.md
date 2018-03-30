@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/fourier/ppath.svg?branch=master)](https://travis-ci.org/fourier/ppath)
 # A Common Lisp path strings manipulation library.
 
-The intention of this package is to reimplemenent all the functionality and APIs from Python's **path** module in Common Lisp, but not limited to this.
+This library is a path strings manipulation library inspired by Python's **os.path**. All functionality from **os.path** is supported on major operation systems (OSX, Linux, Windows).
 
-The philosophy behind is to use simple strings and "dumb" string manipulation functions to handle paths and filenames.
+The philosophy behind is to use simple strings and "dumb" string manipulation functions to handle paths and filenames. Where possible the corresponding OS system functions are called.
 
 Supported [tested] compilers: LispWorks (6.1PE and 7.0), CCL, SBCL.
 Tested on the following platforms:

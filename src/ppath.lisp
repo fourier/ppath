@@ -37,14 +37,28 @@
 
 
 (defun abspath (path)
-  "Convert PATH to the absolute path.
-Invariant: (abspath path) == (normpath (join (getcwd) path))."
+  "Convert relative PATH to absolute. If path is absolute return it unchanged,
+if path is empty return current directory
+
+On POSIX systems invariant:
+(abspath path) == (normpath (join (getcwd) path))
+holds"
   #+windows (ppath.details.nt:abspath path)
   #-windows (ppath.details.posix:abspath path))
 
 
 (defun basename (path)
-  "Get the base name (filename) of PATH.
+  "Extract the base name (filename) of the PATH.
+
+Examples:
+On Windows:
+CL-USER > (basename \"C:\\\\dir\\\\file.txt\")
+=> file.txt
+
+On POSIX:
+CL-USER > (basename \"/foo/bar\")
+=> bar
+
 Invariant: (basename path) == (cdr (split path))"
   #+windows (ppath.details.nt:basename path)
   #-windows (ppath.details.posix:basename path))
@@ -54,25 +68,41 @@ Invariant: (basename path) == (cdr (split path))"
   "Get the common prefix substring  of all strings in PATHS. The separators are not translated,
 so paths interpreted just as normal strings.
 PATHS components could also be lists of strings, like results of
-SPLIT operation on paths. In this case the comparison happens elementwise."
+SPLIT operation on paths. In this case the comparison happens elementwise.
+
+Example:
+CL-USER > (commonprefix '(\"/home/username/dir\" \"/home/user/test\"))
+=> /home/user"
   (apply #'ppath.details.generic:commonprefix paths))
 
 
 (defun dirname (path)
-  "Get the directory name of the PATH.
+  "Get the directory name of the PATH. If the pt
+
+Example:
+CL-USER > (dirname \"/foo/bar\")
+=> /foo
+
+Example (Windows):
+CL-USER > (dirname \"C:\\\\dir\\\\file.txt\")
+=>  C:\\\\dir
+
 Invariant: (dirname path) == (car (split path))"
   #+windows (ppath.details.nt:basename path)
   #-windows (ppath.details.posix:basename path))
 
 
 (defun exists (path)
-  "Return True if path refers to an existing path. Returns nil for broken symbolic links."
+  "Check if the PATH is an existing path.
+On POSIX returns nil for broken symbolic links."
   #+windows (ppath.details.nt:exists path)
   #-windows (ppath.details.posix:exists path))
   
 
 (defun lexists (path)
-  "Return True if path refers to an existing path. Returns True for broken symbolic links. On Windows exists=lexists."
+  "Check if the PATH is an existing path.
+Checks for existance regardless if PATH is a link(even broken) or a file/directory.
+On Windows exists=lexists."
   #+windows (ppath.details.nt:exists path)
   #-windows (ppath.details.posix:lexists path))
 
@@ -81,16 +111,22 @@ Invariant: (dirname path) == (car (split path))"
   "Expand ~ and ~user in the PATH with the contents of user's home path.
 ~ - home directory
 ~user - user's home directory
-On Windows the path is taken either from HOME or USERPROFILE, or constructed vua HOMEPATH and HOMEDRIVE.
+Return PATH unchanged if unable to expand.
+
+On Windows the path is taken either from HOME or USERPROFILE, or constructed via HOMEPATH and HOMEDRIVE.
 On error just return original PATH value.
 On POSIX systems the ~ is replaced with contents of the HOME environment variable or taken from password database
 (/etc/passwd or similar).
 
-Examples: (given the user \"username\" with home directory /Users/username)
+Examples (POSIX): (given the user \"username\" with home directory /Users/username)
 CL-USER > (expanduser \"~/dir\")
 => /Users/username/dir
 CL-USER > (expanduser \"~root/dir\")
-=> /root/dir"
+=> /root/dir
+
+Windows: if HOMEPATH is \"users\\dir\" and HOMEDRIVE is \"C:\\\\\",
+CL-USER > (expanduser \"~test\")
+=> C:\\users\\test"
   #+windows (ppath.details.nt:expanduser path)
   #-windows (ppath.details.posix:expanduser path))
 

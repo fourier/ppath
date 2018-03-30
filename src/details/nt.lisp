@@ -391,7 +391,6 @@ PARTS is a list of split parts without single dots"
 if path is empty return current directory"
   (if (emptyp path)
       (getcwd)
-      #+windows
       (if-let (result 
                (ppath.details.nt.cffi:get-full-path-name path))
           ;; strip special prefix from paths returned by windows function
@@ -399,14 +398,7 @@ if path is empty return current directory"
           (if (starts-with-subseq "\\\\?\\" result)
               (subseq result 4)
               result)
-        (getcwd))
-      #-windows
-      ;; on other platforms just join 
-      (normpath 
-       (if (not (isabs path))
-           (join (getcwd) path)
-           path))))
-
+        (getcwd))))
 
 (defun realpath (path)
   ;; on windows no symlinks support hence just return abspath
