@@ -475,9 +475,10 @@ If STARTDIR specified, use this as a current directory to resolve against."
 
 (defmacro check-no-attrs (filename &body body)
   `(let ((attrs (ppath.details.nt.cffi:get-file-attributes-ex ,filename)))
-     (when (not attrs)
-      (error (format nil "Could not access file or directory ~s" ,filename)))
-     ,@body))
+     (if (not attrs)
+         nil
+         (progn 
+           ,@body))))
 
 (defun getsize (filename)
   "Get the file size of the FILENAME.

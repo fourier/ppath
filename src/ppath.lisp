@@ -137,32 +137,50 @@ The variables like ${var} and $var (and additionally %var% on Windows) are getti
 All unknown or malformed variables ignored and kept as it is.
 
 The difference between Windows and Posix systems is that on Windows variables inside single quotes are not
-expanded, i.e. \"'$HOME'\" will remain \"'$HOME'\", while on Posix systems it will be expanded.
-This behavior kept for compatibility with Python."
+expanded, i.e. \"'$HOME'\" will remain \"'$HOME'\", while on Posix systems it will be expanded. The optional argument MODIFY-IN-QUOTES allows to change this behavior.
+This behavior kept for compatibility with Python's os.path.expandvars.
+
+Examples:
+CL-USER > (expandvars \"$HOME/.bashrc\")
+=> /home/fourier/.bashrc
+
+CL-USER > (osicat-posix:setenv \"foo\" \"abcd\")
+=> 0
+CL-USER > (expandvars \"'$foo'$bar\" nil)
+=> '$foo'$bar
+CL-USER > (expandvars \"'$foo'$bar\" t)
+=> 'abcd'$bar"
   #+windows (ppath.details.nt:expandvars path modify-in-quotes)
   #-windows (ppath.details.posix:expandvars path modify-in-quotes))
     
 
 (defun getatime (path)
-  "Return the time of last access of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
+  "Return the last access time for the PATH.
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
+Return nil if unable to access file or get its attributes."
   #+windows (ppath.details.nt:getatime path)
   #-windows (ppath.details.posix:getatime path))
 
 
 (defun getmtime (path)
-  "Return the time of last modification of path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
+  "Return the last modification time for the PATH.
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
+Return nil if unable to access file or get its attributes."
   #+windows (ppath.details.nt:getmtime path)
   #-windows (ppath.details.posix:getmtime path))
 
 
 (defun getctime (path)
-  "Return the system’s ctime which, on some systems (like Unix) is the time of the last metadata change, and, on others (like Windows), is the creation time for path. The return value is a number giving the number of seconds since the epoch (see the time module). Raise os.error if the file does not exist or is inaccessible."
+  "Return the last status change time for the PATH.
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
+Return nil if unable to access file or get its attributes."
   #+windows (ppath.details.nt:getctime path)  
   #-windows (ppath.details.posix:getctime path))
 
 
 (defun getsize (path)
-  "return the size, in bytes, of path. raise os.error if the file does not exist or is inaccessible."
+  "Get the file size in bytes of the PATH.
+Return nil if unable to access file or get its attributes."
   #+windows (ppath.details.nt:getsize path)
   #-windows (ppath.details.posix:getsize path))
 
