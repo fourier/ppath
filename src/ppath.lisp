@@ -238,7 +238,6 @@ CL-USER > (ismount \"/mnt/cdrom\")
   #-windows (ppath.details.posix:ismount path))
 
 
-;; TODO: documentation for functions below
 (defun join(path &rest paths)
   "Join paths provided, merging (if absolute) and
 inserting missing separators.
@@ -308,28 +307,61 @@ Not available on Windows."
 
 
 (defun split (path)
-  "split the pathname path into a pair, (head, tail) where tail is the last pathname component and head is everything leading up to that. the tail part will never contain a slash; if path ends in a slash, tail will be empty. if there is no slash in path, head will be empty. if path is empty, both head and tail are empty. trailing slashes are stripped from head unless it is the root (one or more slashes only). in all cases, join(head, tail) returns a path to the same location as path (but the strings may differ). also see the functions dirname() and basename()."
+  "Split the path into the pair (directory . filename).
+If the path ends with \"/\", the file component is empty
+
+On Windows, if the head is a drive name, the slashes are not stripped from it.
+
+Examples:
+(On Windows)
+CL-USER > (split \"c:\\\\Sources\\\\lisp\")
+=> (\"c:\\\\Sources\" . \"lisp\")
+CL-USER > (split \"\\\\\\\\host-name\\\\share-name\\\\dir1\\\\dir2\")
+=> (\"\\\\\\\\host-name\\\\share-name\\\\dir1\" . \"dir2\")
+(on POSIX)
+CL-USER > (split \"/foo/bar\")
+=> (\"/foo\" . \"bar\")
+CL-USER > (split \"/foo/bar/\")
+=> (\"/foo/bar/\" . \"\")"
   #+windows (ppath.details.nt:split path)
   #-windows (ppath.details.posix:split path))
   
 
 (defun splitdrive (path)
-  "split the pathname path into a pair (drive, tail) where drive is either a drive specification or the empty string. on systems which do not use drive specifications, drive will always be the empty string. in all cases, drive + tail will be the same as path."
+  "Split a path to the drive (with letter) and path after drive.
+This function also parses the UNC paths, providing \\\\hostname\\mountpoint
+as a drive part.
+
+On POSIX drive is an empty string.
+
+Invariant: (concatenate 'string (car (splitdrive path)) (cdr (splitdrive path))) == path
+
+Example:
+CL-USER > (splitdrive \"C:\\Sources\\lisp\")
+=> (\"C:\" \"\\Sources\\lisp\")"
   #+windows (ppath.details.nt:splitdrive path)
   #-windows (cons "" path))
 
 (defun splitext(path)
   "Split PATH to root and extension. Return a pair (root . ext)
-Invariant: (concatenate 'string root ext) == path"
+If the filename component of the PATH starts with dot, like .cshrc, considering no extension.
+Invariant: (concatenate 'string root ext) == path
+
+Examples:
+CL-USER > (splitext \"~/test.cshrc\")
+=> (\"~/test\" . \".cshrc\")
+CL-USER > (splitext \"~/notes.txt\")
+=> (\"~/notes\" . \".txt\")"
   (ppath.details.generic:splitext path))
 
 
 (defun splitunc (path)
-  "split the pathname path into a pair (unc, rest) so that unc is the unc mount point (such as r'\\host\mount'), if present, and rest the rest of the path (such as r'\path\file.ext'). for paths containing drive letters, unc will always be the empty string."
+  "Split a pathname with UNC path. UNC syntax:
+\\\\host-name\\share-name\\file_path
+Return a cons pair (\\\\host-name\\share-name . \\file_path)
+
+Not available on POSIX."
   #+windows (ppath.details.nt:splitunc path)
   #-windows (declare (ignore path))
   #-windows (error "This function is not available on POSIX systems"))
 
-
-
-            
