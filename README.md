@@ -40,23 +40,22 @@ If path is absolute return it unchanged.
 If path is empty return current directory.
     
 On POSIX systems invariant:
-
 ```(abspath path) == (normpath (join (getcwd) path))```
 
-holds
+
 
 ### *function* ppath:basename (```path```)
-Extract the base name (filename) of the PATH.
+Extract the base name (filename) of the ```path```.
     
 Example:
-    On Windows:
-```
+On Windows:
+```lisp
 CL-USER > (basename "C:\\dir\\file.txt")
 => file.txt
 ```
 
 On POSIX:
-```
+```lisp
 CL-USER > (basename "/foo/bar")
 => bar
 ```
@@ -65,78 +64,72 @@ Invariant:
 ```(basename path) == (cdr (split path))```
 
 
-### *function* ppath:commonprefix (```&REST PATHS```)
-Get the common prefix substring  of all strings in PATHS. The separators are not translated, so paths interpreted just as normal strings.
+### *function* ppath:commonprefix (```&rest paths```)
+Get the common prefix substring  of all strings in ```paths```. The separators are not translated, so paths interpreted just as normal strings.
 
-PATHS components could also be lists of strings, like results of
-SPLIT operation on paths. In this case the comparison happens elementwise.
+```paths``` components could also be lists of strings, like results of ```split``` operation on paths. In this case the comparison happens elementwise.
     
-    Example:
-    CL-USER > (commonprefix '("/home/username/dir" "/home/user/test"))
-    => /home/user
+Example:
+    
+```lisp
+CL-USER > (commonprefix '("/home/username/dir" "/home/user/test"))
+=> /home/user
+```
+    
+### *function* ppath:dirname (```path```)
+Get the directory name of the ```path```.
+    
+Example:
+    
+```lisp
+CL-USER > (dirname "/foo/bar")
+=> /foo
+```
 
-### PPATH:DIRNAME
-  [symbol]
+Example (Windows):
 
-DIRNAME names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Get the directory name of the PATH. If the pt
-    
-    Example:
-    CL-USER > (dirname "/foo/bar")
-    => /foo
-    
-    Example (Windows):
-    CL-USER > (dirname "C:\\dir\\file.txt")
-    =>  C:\\dir
-    
-    Invariant: (dirname path) == (car (split path))
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:EXISTS
-  [symbol]
+```lisp
+CL-USER > (dirname "C:\\dir\\file.txt")
+=>  C:\\dir
+```    
+Invariant: ```(dirname path) == (car (split path))```
 
-EXISTS names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Check if the PATH is an existing path.
-    On POSIX returns nil for broken symbolic links.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:EXPANDUSER
-  [symbol]
+### *function* ppath:exists (```path```)
+Check if the ```path``` is an existing path.
+On POSIX returns nil for broken symbolic links.
 
-EXPANDUSER names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Expand ~ and ~user in the PATH with the contents of user's home path.
-    ~ - home directory
-    ~user - user's home directory
-    Return PATH unchanged if unable to expand.
-    
-    On Windows the path is taken either from HOME or USERPROFILE, or constructed via HOMEPATH and HOMEDRIVE.
-    On error just return original PATH value.
-    On POSIX systems the ~ is replaced with contents of the HOME environment variable or taken from password database
-    (/etc/passwd or similar).
-    
-    Examples (POSIX): (given the user "username" with home directory /Users/username)
-    CL-USER > (expanduser "~/dir")
-    => /Users/username/dir
-    CL-USER > (expanduser "~root/dir")
-    => /root/dir
-    
-    Windows: if HOMEPATH is "users\dir" and HOMEDRIVE is "C:\\",
-    CL-USER > (expanduser "~test")
-    => C:\users\test
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:EXPANDVARS
-  [symbol]
 
-EXPANDVARS names a compiled function:
-  Lambda-list: (PATH &OPTIONAL (MODIFY-IN-QUOTES T))
-  Derived type: (FUNCTION (T &OPTIONAL T) *)
+### *function* ppath:expanduser (```PATH```)
+Expand ~ and ~user in the ```path``` with the contents of user's home path.
+
+~ - home directory
+~user - user's home directory
+
+Return ```path``` unchanged if unable to expand.
+    
+On Windows the path is taken either from **HOME** or **USERPROFILE**, or constructed via **HOMEPATH** and **HOMEDRIVE**.
+On error just return original ```path``` value.
+On POSIX systems the ~ is replaced with contents of the **HOME** environment variable or taken from password database (```/etc/passwd``` or similar).
+    
+Examples (POSIX): (given the user "username" with home directory /Users/username)
+
+```lisp
+CL-USER > (expanduser "~/dir")
+=> /Users/username/dir
+CL-USER > (expanduser "~root/dir")
+=> /root/dir
+```
+
+Windows: if **HOMEPATH** is "users\dir" and **HOMEDRIVE** is "C:\",
+
+```lisp
+CL-USER > (expanduser "~test")
+=> C:\users\test
+```
+
+### *function* ppath:expandvars (```PATH &OPTIONAL (MODIFY-IN-QUOTES T)```)
+
+Derived type: (FUNCTION (T &OPTIONAL T) *)
   Documentation:
     Expand the PATH replacing environment variables with their contents.
     The variables like ${var} and $var (and additionally %var% on Windows) are getting replaced by their values.

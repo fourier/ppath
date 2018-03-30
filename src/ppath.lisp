@@ -77,7 +77,7 @@ CL-USER > (commonprefix '(\"/home/username/dir\" \"/home/user/test\"))
 
 
 (defun dirname (path)
-  "Get the directory name of the PATH. If the pt
+  "Get the directory name of the PATH. 
 
 Example:
 CL-USER > (dirname \"/foo/bar\")
