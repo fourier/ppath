@@ -28,7 +28,7 @@ Limitations: On Win32 assumed OS versions with Unicode support.
 The library consist of 3 packages: *ppath*, *ppath-nt* and *ppath-posix*. The generic package *ppath* forwards calls to appropriate OS-dependent library. It exports only functions available for the current platform.
 
 ## Semantical difference from Python's os.path module
-- Where possible do not raise an error, but rather return nil.
+- Where possible do not raise an error, but rather return ```nil```.
 - ```samestat``` function is not implemented (makes no sense since osicat's wrapper around stat()/fstat() calls is used)
 - ```walk``` is not implemented (there is already a couple of good implementations around)
 
@@ -96,7 +96,7 @@ Invariant: ```(dirname path) == (car (split path))```
 
 ### *function* ppath:exists (```path```)
 Check if the ```path``` is an existing path.
-On POSIX returns nil for broken symbolic links.
+On POSIX returns ```nil``` for broken symbolic links.
 
 
 ### *function* ppath:expanduser (```PATH```)
@@ -156,26 +156,26 @@ Return the last access time for the ```path```.
 
 Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
 
-Return nil if unable to access file or get its attributes.
+Return ```nil``` if unable to access file or get its attributes.
 
 ### *function* ppath:getctime (```path```)
 Return the last status change time for the ```path```.
 
 Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
 
-Return nil if unable to access file or get its attributes.
+Return ```nil``` if unable to access file or get its attributes.
 
-### *function ppath:getmtime (```path```)
+### *function* ppath:getmtime (```path```)
 Return the last modification time for the ```path```.
 
 Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
 
-Return nil if unable to access file or get its attributes.
+Return ```nil``` if unable to access file or get its attributes.
 
 ### *function* ppath:getsize (```path```)
 Get the file size in bytes of the ```path```.
 
-Return nil if unable to access file or get its attributes.
+Return ```nil``` if unable to access file or get its attributes.
 
 ### *function* ppath:isabs (```path```)
 Determine if the ```path``` is an absolute pathname.
@@ -185,7 +185,6 @@ file system but rather performs string manipulations to
 determine if the ```path``` is an absolute filename.
     
 Examples (POSIX):
-
 ```lisp
 CL-USER > (isabs "/Sources/lisp")
 => t
@@ -195,58 +194,39 @@ CL-USER > (isabs "my/dir")
 
 Examples (Windows):
 ```lisp
-CL-USER > isabs "\\\\host-name\\share-name\\")
+CL-USER > (isabs "\\\\host-name\\share-name\\")
 => t
 ```
 
-### *function PPATH:ISDIR
-  [symbol]
+### *function* ppath:isdir (```path```)
+Determine if ```path``` is an existing directory. If the ```path``` is symlink then the invariant
+```(and (islink ```path```) (isdir ```path```))```
+holds.
 
-ISDIR names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Determine if ```path``` is an existing directory. If the ```path``` is symlink then the invariant
-    (and (islink ```path```) (isdir ```path```)) holds.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:ISFILE
-  [symbol]
-
-ISFILE names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Determine if the ```path``` exists and a file. Returns also t for symbolic links.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:ISLINK
-  [symbol]
-
-ISLINK names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Determine if the ```path``` is symbolic link.
-    On Windows always return nil.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:ISMOUNT
-  [symbol]
-
-ISMOUNT names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Test if the path is a mount point.
-    On POSIX it is a directory where another filesystem is mounted.
-    On Windows for local paths it should be
-    an absolute path, for UNC it should be mount point of the host
+### *function* ppath:isfile (```path```)
+Determine if the ```path``` exists and a file. Returns also t for symbolic links.
     
-    Example:
-    CL-USER > (ismount "/mnt")
-    => nil
-    CL-USER > (ismount "/mnt/cdrom")
-    => t
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:JOIN
+### *function* ppath:islink (```path```)
+Determine if the ```path``` is symbolic link.
+
+On Windows always return ```nil```.
+
+### *function* ppath:ismount (```path```)
+Test if the ```path``` is a mount point.
+
+On POSIX it is a directory where another filesystem is mounted.
+
+On Windows for local paths it should be an absolute path, for UNC it should be mount point of the host
+    
+Example:
+```lisp
+CL-USER > (ismount "/mnt")
+=> nil
+CL-USER > (ismount "/mnt/cdrom")
+=> t
+```
+
+### *function* PPATH:JOIN
   [symbol]
 
 JOIN names a compiled function:
@@ -266,7 +246,7 @@ JOIN names a compiled function:
     CL-USER > (join "/foo/" "bar/" "baz/")
     => /foo/bar/baz/
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:LEXISTS
+### *function* PPATH:LEXISTS
   [symbol]
 
 LEXISTS names a compiled function:
@@ -277,7 +257,7 @@ LEXISTS names a compiled function:
     Checks for existance regardless if ```path``` is a link(even broken) or a file/directory.
     On Windows exists=lexists.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:NORMCASE
+### *function* PPATH:NORMCASE
   [symbol]
 
 NORMCASE names a compiled function:
@@ -288,7 +268,7 @@ NORMCASE names a compiled function:
     On Windows, replace slash with backslahes and lowers the case of the ```path```.
     On POSIX do nothing and just return ```path```.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:NORMPATH
+### *function* PPATH:NORMPATH
   [symbol]
 
 NORMPATH names a compiled function:
@@ -302,7 +282,7 @@ NORMPATH names a compiled function:
     CL-USER > (normpath "///..//./foo/.//bar")
     => /foo/bar
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:REALPATH
+### *function* PPATH:REALPATH
   [symbol]
 
 REALPATH names a compiled function:
@@ -312,9 +292,9 @@ REALPATH names a compiled function:
     Return real ```path``` of the file, following symlinks if necessary.
     On Windows just return (abspath path).
     The ```path``` shall be already expanded properly.
-    Return nil if ```path``` does not exist or not accessible
+    Return ```nil``` if ```path``` does not exist or not accessible
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:RELPATH
+### *function* PPATH:RELPATH
   [symbol]
 
 RELPATH names a compiled function:
@@ -324,7 +304,7 @@ RELPATH names a compiled function:
     Return the relative version of the ```path```.
     If STARTDIR specified, use this as a current directory to resolve against.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:SAMEFILE
+### *function* PPATH:SAMEFILE
   [symbol]
 
 SAMEFILE names a compiled function:
@@ -336,7 +316,7 @@ SAMEFILE names a compiled function:
     
     Not available on Windows.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:SAMEOPENFILE
+### *function* PPATH:SAMEOPENFILE
   [symbol]
 
 SAMEOPENFILE names a compiled function:
@@ -348,7 +328,7 @@ SAMEOPENFILE names a compiled function:
     
     Not available on Windows.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:SPLIT
+### *function* PPATH:SPLIT
   [symbol]
 
 SPLIT names a compiled function:
@@ -372,7 +352,7 @@ SPLIT names a compiled function:
     CL-USER > (split "/foo/bar/")
     => ("/foo/bar/" . "")
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:SPLITDRIVE
+### *function* PPATH:SPLITDRIVE
   [symbol]
 
 SPLITDRIVE names a compiled function:
@@ -391,7 +371,7 @@ SPLITDRIVE names a compiled function:
     CL-USER > (splitdrive "C:\Sources\lisp")
     => ("C:" "\Sources\lisp")
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:SPLITEXT
+### *function* PPATH:SPLITEXT
   [symbol]
 
 SPLITEXT names a compiled function:
@@ -408,7 +388,7 @@ SPLITEXT names a compiled function:
     CL-USER > (splitext "~/notes.txt")
     => ("~/notes" . ".txt")
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:SPLITUNC
+### *function* PPATH:SPLITUNC
   [symbol]
 
 SPLITUNC names a compiled function:
