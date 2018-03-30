@@ -8,7 +8,7 @@ The philosophy behind is to use simple strings and "dumb" string manipulation fu
 Supported [tested] compilers: LispWorks (6.1PE and 7.0), CCL, SBCL.
 Tested on the following platforms:
 
-### Windows
+#### Windows
 - Clozure CL Version 1.11-r16635  (WindowsX8664)
 - LispWorks 6.1.1 Personal Edition 32bit
 - LispWorks 7.0 Hobbyist Edition 32bit
@@ -16,11 +16,11 @@ Tested on the following platforms:
 
 Limitations: On Win32 assumed OS versions with Unicode support.
 
-### Linux
+#### Linux
 - SBCL 1.3.14
 - CCL 1.11.5
 
-### OSX
+#### OSX
 - Lispworks 7.0 Hobbyist DV Edition 32bit
 - Clozure CL Version 1.11
 
