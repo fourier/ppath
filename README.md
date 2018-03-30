@@ -34,46 +34,48 @@ The library consist of 3 packages: *ppath*, *ppath-nt* and *ppath-posix*. The ge
 
 ## API description
 
-### *function* (ppath:abspath ```path```)
-Convert relative PATH to absolute. If path is absolute return it unchanged,
-if path is empty return current directory
+### *function* ppath:abspath (```path```)
+Convert relative ```path``` to absolute.
+If path is absolute return it unchanged.
+If path is empty return current directory.
     
 On POSIX systems invariant:
-(abspath path) == (normpath (join (getcwd) path))
+
+```(abspath path) == (normpath (join (getcwd) path))```
+
 holds
 
-### (ppath:basename PATH)
-  Derived type: (FUNCTION (T) *)
-    Extract the base name (filename) of the PATH.
+### *function* ppath:basename (```path```)
+Extract the base name (filename) of the PATH.
     
-    Example:
+Example:
     On Windows:
-    CL-USER > (basename "C:\\dir\\file.txt")
-    => file.txt
-    
-    On POSIX:
-    CL-USER > (basename "/foo/bar")
-    => bar
-    
-    Invariant: (basename path) == (cdr (split path))
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:COMMONPREFIX
-  [symbol]
+```
+CL-USER > (basename "C:\\dir\\file.txt")
+=> file.txt
+```
 
-COMMONPREFIX names a compiled function:
-  Lambda-list: (&REST PATHS)
-  Derived type: FUNCTION
-  Documentation:
-    Get the common prefix substring  of all strings in PATHS. The separators are not translated,
-    so paths interpreted just as normal strings.
-    PATHS components could also be lists of strings, like results of
-    SPLIT operation on paths. In this case the comparison happens elementwise.
+On POSIX:
+```
+CL-USER > (basename "/foo/bar")
+=> bar
+```
+
+Invariant:
+```(basename path) == (cdr (split path))```
+
+
+### *function* ppath:commonprefix (```&REST PATHS```)
+Get the common prefix substring  of all strings in PATHS. The separators are not translated, so paths interpreted just as normal strings.
+
+PATHS components could also be lists of strings, like results of
+SPLIT operation on paths. In this case the comparison happens elementwise.
     
     Example:
     CL-USER > (commonprefix '("/home/username/dir" "/home/user/test"))
     => /home/user
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:DIRNAME
+
+### PPATH:DIRNAME
   [symbol]
 
 DIRNAME names a compiled function:
