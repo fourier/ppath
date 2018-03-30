@@ -200,11 +200,11 @@ CL-USER > (isabs "\\\\host-name\\share-name\\")
 
 ### *function* ppath:isdir (```path```)
 Determine if ```path``` is an existing directory. If the ```path``` is symlink then the invariant
-```(and (islink ```path```) (isdir ```path```))```
+```(and (islink path) (isdir path)) == t```
 holds.
 
 ### *function* ppath:isfile (```path```)
-Determine if the ```path``` exists and a file. Returns also t for symbolic links.
+Determine if the ```path``` exists and a file. Returns also ```t``` for symbolic links.
     
 ### *function* ppath:islink (```path```)
 Determine if the ```path``` is symbolic link.
@@ -226,108 +226,66 @@ CL-USER > (ismount "/mnt/cdrom")
 => t
 ```
 
-### *function* PPATH:JOIN
-  [symbol]
+### *function* ppath:join (```path &rest paths```)
+Join paths provided, merging (if absolute) and
+inserting missing separators.
 
-JOIN names a compiled function:
-  Lambda-list: (```path``` &REST PATHS)
-  Derived type: (FUNCTION (T &REST T) *)
-  Documentation:
-    Join paths provided, merging (if absolute) and
-    inserting missing separators.
+Example:
+```lips
+CL-USER > (join "a/b" "x/y")
+=> a/b\\x/y
+CL-USER > (join "c:\\hello" "world/test.txt")
+=> c:\\hello\\world/test.txt
+CL-USER > (join "/foo" "bar" "baz")
+=> /foo/bar/baz
+CL-USER > (join "/foo/" "bar/" "baz/")
+=> /foo/bar/baz/
+```
+
+### *function* ppath:lexists (```path```)
+Check if the ```path``` is an existing path.
+
+Checks for existance regardless if ```path``` is a link(even broken) or a file/directory.
+
+On Windows ```exists``` = ```lexists```.
+
+### *function* ppath:normcase (```path```)
+Normalize the ```path```.
+
+On Windows, replace slash with backslahes and lowers the case of the ```path```.
+
+On POSIX do nothing and just return ```path```.
+
+### *function* ppath:normpath (```path```)
+Normalize path, removing unnecessary/redundant parts, like dots, double slashes, etc. Expanding ```..``` as well.
     
-    Example:
-    CL-USER > (join "a/b" "x/y")
-    => a/b\\x/y
-    CL-USER > (join "c:\\hello" "world/test.txt")
-    => c:\\hello\\world/test.txt
-    CL-USER > (join "/foo" "bar" "baz")
-    => /foo/bar/baz
-    CL-USER > (join "/foo/" "bar/" "baz/")
-    => /foo/bar/baz/
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:LEXISTS
-  [symbol]
+Example:
+```lisp    
+CL-USER > (normpath "///..//./foo/.//bar")
+=> /foo/bar
+```
 
-LEXISTS names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Check if the ```path``` is an existing path.
-    Checks for existance regardless if ```path``` is a link(even broken) or a file/directory.
-    On Windows exists=lexists.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:NORMCASE
-  [symbol]
+### *function* ppath:realpath (```path```)
+Return real ```path``` of the file, following symlinks if necessary. On Windows just return (abspath path). The ```path``` shall be already expanded properly.
 
-NORMCASE names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Normalize the ```path```.
-    On Windows, replace slash with backslahes and lowers the case of the ```path```.
-    On POSIX do nothing and just return ```path```.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:NORMPATH
-  [symbol]
+Return ```nil``` if ```path``` does not exist or not accessible
 
-NORMPATH names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Normalize path, removing unnecessary/redundant parts, like dots,
-    double slashes, etc. Expanding .. as well.
+### *function* ppath:relpath (```path &optional (start ".")```)
+Return the relative version of the ```path```.
+
+If ```startdir``` provided, use this as a current directory to resolve against.
+
+### *function* ppath:samefile (```path1 path2```)
+Determine if PATH1 and PATH2 are the paths to the same file.
+If one of the paths is symlink to another they considered the same.
     
-    Example:
-    CL-USER > (normpath "///..//./foo/.//bar")
-    => /foo/bar
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:REALPATH
-  [symbol]
+*Not available on Windows.*
 
-REALPATH names a compiled function:
-  Lambda-list: (```path```)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Return real ```path``` of the file, following symlinks if necessary.
-    On Windows just return (abspath path).
-    The ```path``` shall be already expanded properly.
-    Return ```nil``` if ```path``` does not exist or not accessible
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:RELPATH
-  [symbol]
-
-RELPATH names a compiled function:
-  Lambda-list: (```path``` &OPTIONAL (START .))
-  Derived type: (FUNCTION (T &OPTIONAL T) *)
-  Documentation:
-    Return the relative version of the ```path```.
-    If STARTDIR specified, use this as a current directory to resolve against.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:SAMEFILE
-  [symbol]
-
-SAMEFILE names a compiled function:
-  Lambda-list: (PATH1 PATH2)
-  Derived type: (FUNCTION (T T) *)
-  Documentation:
-    Determine if PATH1 and PATH2 are the paths to the same file.
-    If one of the paths is symlink to another they considered the same.
+### *function* ppath:sameopenfile (```stream1 stream2```)
+Determine if the open file streams ```stream1``` and ```stream2``` are of the same file.
     
-    Not available on Windows.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-### *function* PPATH:SAMEOPENFILE
-  [symbol]
-
-SAMEOPENFILE names a compiled function:
-  Lambda-list: (FP1 FP2)
-  Derived type: (FUNCTION (T T) *)
-  Documentation:
-    Determine if the open file streams STREAM1 and STREAM2 are
-    of the same file.
+*Not available on Windows.*
     
-    Not available on Windows.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 ### *function* PPATH:SPLIT
   [symbol]
 
