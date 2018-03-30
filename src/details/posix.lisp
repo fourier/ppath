@@ -38,6 +38,9 @@
       (progn ,@body)
      (osicat-posix:enoent (e)
        (declare (ignore e))
+       nil)
+     (osicat-posix:enotdir (e)
+       (declare (ignore e))
        nil)))
 
 
@@ -373,7 +376,8 @@ Example:
   "Return real path of the file, following symlinks if necessary"
   ;; implementation does not follow python's implementation and
   ;; just a wrapper around stdlib's BSD/linux realpath
-  (osicat-posix:realpath filename))
+  (osicat-check-no-file
+    (osicat-posix:realpath filename)))
 
 
 (defun relpath (path &optional (start +current-dir+))
@@ -412,8 +416,6 @@ Example:
 
 (defun ismount (path)
   "Determine if the PATH is a mount point"
-  ;; WARNING: not tested!
-  ;; follows os.path implementation
   (when (islink path)
     (return-from ismount nil))
   (osicat-check-no-file

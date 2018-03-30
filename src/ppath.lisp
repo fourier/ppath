@@ -50,7 +50,7 @@ holds"
 (defun basename (path)
   "Extract the base name (filename) of the PATH.
 
-Examples:
+Example:
 On Windows:
 CL-USER > (basename \"C:\\\\dir\\\\file.txt\")
 => file.txt
@@ -140,7 +140,7 @@ The difference between Windows and Posix systems is that on Windows variables in
 expanded, i.e. \"'$HOME'\" will remain \"'$HOME'\", while on Posix systems it will be expanded. The optional argument MODIFY-IN-QUOTES allows to change this behavior.
 This behavior kept for compatibility with Python's os.path.expandvars.
 
-Examples:
+Example:
 CL-USER > (expandvars \"$HOME/.bashrc\")
 => /home/fourier/.bashrc
 
@@ -223,57 +223,86 @@ On Windows always return nil."
   #-windows (ppath.details.posix:islink path))
   
 
-;; TODO: documentation for functions below
 (defun ismount (path)
-  "Return t if pathname PATH is a mount point: a point in a file system where a different file system has been mounted. the function checks whether path‘s parent, path/.., is on a different device than path, or whether path/.. and path point to the same i-node on the same device — this should detect mount points for all unix and posix variants."
+  "Test if the path is a mount point.
+On POSIX it is a directory where another filesystem is mounted.
+On Windows for local paths it should be
+an absolute path, for UNC it should be mount point of the host
+
+Example:
+CL-USER > (ismount \"/mnt\")
+=> nil
+CL-USER > (ismount \"/mnt/cdrom\")
+=> t"
   #+windows (ppath.details.nt:ismount path)
   #-windows (ppath.details.posix:ismount path))
 
 
-
+;; TODO: documentation for functions below
 (defun join(path &rest paths)
-  "Join one or more path components intelligently. The return value is the concatenation of PATH and any members of PATHS with exactly one directory separator following each non-empty part except the last, meaning that the result will only end in a separator if the last part is empty. If a component is an absolute path, all previous components are thrown away and joining continues from the absolute path component.
+  "Join paths provided, merging (if absolute) and
+inserting missing separators.
 
-On windows, the drive letter is not reset when an absolute path component (e.g., \"\foo\") is encountered. If a component contains a drive letter, all previous components are thrown away and the drive letter is reset. Note that since there is a current directory for each drive, (join \"c:\" \"foo\") represents a path relative to the current directory on drive c: (c:foo), not c:\foo."
+Example:
+CL-USER > (join \"a/b\" \"x/y\")
+=> a/b\\\\x/y
+CL-USER > (join \"c:\\\\hello\" \"world/test.txt\")
+=> c:\\\\hello\\\\world/test.txt
+CL-USER > (join \"/foo\" \"bar\" \"baz\")
+=> /foo/bar/baz
+CL-USER > (join \"/foo/\" \"bar/\" \"baz/\")
+=> /foo/bar/baz/"
   #+windows (apply #'ppath.details.nt:join path paths)
   #-windows (apply #'ppath.details.posix:join path paths))
 
 
 (defun normcase (path)
-  "Normalize the case of a pathname. On unix and mac os x, this returns the path unchanged; on windows, it lowercases PATH and converts forward slashes to backward slashes."
+  "Normalize the PATH.
+On Windows, replace slash with backslahes and lowers the case of the PATH.
+On POSIX do nothing and just return PATH."
   #+windows (ppath.details.nt:normcase path)
   #-windows (ppath.details.posix:normcase path))
 
 (defun normpath (path)
   "Normalize path, removing unnecessary/redundant parts, like dots,
 double slashes, etc. Expanding .. as well.
+
 Example:
-///..//./foo/.//bar => /foo/bar
-On Windows it additionally converts forward slashes to backward slashes."
+CL-USER > (normpath \"///..//./foo/.//bar\")
+=> /foo/bar"
   #+windows (ppath.details.nt:normpath path)
   #-windows (ppath.details.posix:normpath path))
 
 
 (defun realpath(path)
-  "Return the canonical path of the specified filename, eliminating any symbolic links encountered in the path (if they are supported by the operating system)."
+  "Return real PATH of the file, following symlinks if necessary.
+On Windows just return (abspath path).
+The PATH shall be already expanded properly.
+Return nil if PATH does not exist or not accessible"
   #+windows (ppath.details.nt:realpath path)
   #-windows (ppath.details.posix:realpath path))
 
-(defun relpath (path &optional (start "."))
-  "Return a relative filepath to PATH either from the current directory or from an optional START directory. This is a path computation: the filesystem is not accessed to confirm the existence or nature of path or start.
 
-START defaults to current directory '.'"
+(defun relpath (path &optional (start "."))
+  "Return the relative version of the PATH.
+If STARTDIR specified, use this as a current directory to resolve against."
   #+windows (ppath.details.nt:relpath path start)
   #-windows (ppath.details.posix:relpath path start))
 
 
 (defun samefile(path1 path2)
-  "return true if both pathname arguments refer to the same file or directory (as indicated by device number and i-node number). raise an exception if a os.stat() call on either pathname fails."
+  "Determine if PATH1 and PATH2 are the paths to the same file.
+If one of the paths is symlink to another they considered the same.
+
+Not available on Windows."
   #+windows (error "Not implemented")
   #-windows (ppath.details.posix:samefile path1 path2))
 
 (defun sameopenfile(fp1 fp2)
-  "return true if the file descriptors fp1 and fp2 refer to the same file."
+  "Determine if the open file streams STREAM1 and STREAM2 are
+of the same file.
+
+Not available on Windows."
   #+windows (error "Not implemented")
   #-windows (ppath.details.posix:sameopenfile fp1 fp2))
 
