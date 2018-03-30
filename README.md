@@ -102,8 +102,8 @@ On POSIX returns nil for broken symbolic links.
 ### *function* ppath:expanduser (```PATH```)
 Expand ~ and ~user in the ```path``` with the contents of user's home path.
 
-~ - home directory
-~user - user's home directory
+* ~ - home directory
+* ~user - user's home directory
 
 Return ```path``` unchanged if unable to expand.
     
@@ -120,135 +120,119 @@ CL-USER > (expanduser "~root/dir")
 => /root/dir
 ```
 
-Windows: if **HOMEPATH** is "users\dir" and **HOMEDRIVE** is "C:\",
+Windows: if **HOMEPATH** is "users\dir" and **HOMEDRIVE** is "C:\\",
 
 ```lisp
 CL-USER > (expanduser "~test")
 => C:\users\test
 ```
 
-### *function* ppath:expandvars (```PATH &OPTIONAL (MODIFY-IN-QUOTES T)```)
+### *function* ppath:expandvars (```path &optional (modify-in-quotes t)```)
 
-Derived type: (FUNCTION (T &OPTIONAL T) *)
-  Documentation:
-    Expand the PATH replacing environment variables with their contents.
-    The variables like ${var} and $var (and additionally %var% on Windows) are getting replaced by their values.
-    All unknown or malformed variables ignored and kept as it is.
+Expand the ```path``` replacing environment variables with their contents.
+
+The variables like ```${var}``` and ```$var``` (and additionally ```%var%``` on Windows) are getting replaced by their values.
+
+All unknown or malformed variables ignored and kept as it is.
     
-    The difference between Windows and Posix systems is that on Windows variables inside single quotes are not
-    expanded, i.e. "'$HOME'" will remain "'$HOME'", while on Posix systems it will be expanded. The optional argument MODIFY-IN-QUOTES allows to change this behavior.
-    This behavior kept for compatibility with Python's os.path.expandvars.
+The difference between Windows and POSIX systems is that on Windows variables inside single quotes are not expanded, i.e. "```'$HOME'```" will remain "```'$HOME'```", while on POSIX systems it will be expanded. The optional argument ```modify-in-quotes``` allows to change this behavior.
+
+This behavior kept for compatibility with Python's ```os.path.expandvars```.
+
+Example:
+```lisp
+CL-USER > (expandvars "$HOME/.bashrc")
+=> /home/username/.bashrc
+CL-USER > (osicat-posix:setenv "foo" "abcd")
+=> 0
+CL-USER > (expandvars "'$foo'$bar" nil)
+=> '$foo'$bar
+CL-USER > (expandvars "'$foo'$bar" t)
+=> 'abcd'$bar
+```
+
+### *function* ppath:getatime (```path```)
+Return the last access time for the ```path```.
+
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
+
+Return nil if unable to access file or get its attributes.
+
+### *function* ppath:getctime (```path```)
+Return the last status change time for the ```path```.
+
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
+
+Return nil if unable to access file or get its attributes.
+
+### *function ppath:getmtime (```path```)
+Return the last modification time for the ```path```.
+
+Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
+
+Return nil if unable to access file or get its attributes.
+
+### *function* ppath:getsize (```path```)
+Get the file size in bytes of the ```path```.
+
+Return nil if unable to access file or get its attributes.
+
+### *function* ppath:isabs (```path```)
+Determine if the ```path``` is an absolute pathname.
+
+This function never checks for file existance nor address
+file system but rather performs string manipulations to
+determine if the ```path``` is an absolute filename.
     
-    Example:
-    CL-USER > (expandvars "$HOME/.bashrc")
-    => /home/fourier/.bashrc
-    
-    CL-USER > (osicat-posix:setenv "foo" "abcd")
-    => 0
-    CL-USER > (expandvars "'$foo'$bar" nil)
-    => '$foo'$bar
-    CL-USER > (expandvars "'$foo'$bar" t)
-    => 'abcd'$bar
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:GETATIME
-  [symbol]
+Examples (POSIX):
 
-GETATIME names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Return the last access time for the PATH.
-    Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
-    Return nil if unable to access file or get its attributes.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:GETCTIME
-  [symbol]
+```lisp
+CL-USER > (isabs "/Sources/lisp")
+=> t
+CL-USER > (isabs "my/dir")
+=> nil
+```
 
-GETCTIME names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Return the last status change time for the PATH.
-    Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
-    Return nil if unable to access file or get its attributes.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:GETMTIME
-  [symbol]
+Examples (Windows):
+```lisp
+CL-USER > isabs "\\\\host-name\\share-name\\")
+=> t
+```
 
-GETMTIME names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Return the last modification time for the PATH.
-    Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z).
-    Return nil if unable to access file or get its attributes.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:GETSIZE
-  [symbol]
-
-GETSIZE names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Get the file size in bytes of the PATH.
-    Return nil if unable to access file or get its attributes.
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:ISABS
-  [symbol]
-
-ISABS names a compiled function:
-  Lambda-list: (PATH)
-  Derived type: (FUNCTION (T) *)
-  Documentation:
-    Determine if the PATH is an absolute pathname.
-    This function never checks for file existance nor address
-    file system but rather performs string manipulations to
-    determine if the PATH is an absolute filename.
-    
-    Examples (POSIX):
-    CL-USER > (isabs "/Sources/lisp")
-    => t
-    CL-USER > (isabs "my/dir")
-    => nil
-    
-    Examples (Windows):
-    CL-USER > isabs "\\\\host-name\\share-name\\")
-    => t
-  Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
-PPATH:ISDIR
+### *function PPATH:ISDIR
   [symbol]
 
 ISDIR names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Determine if PATH is an existing directory. If the PATH is symlink then the invariant
-    (and (islink PATH) (isdir PATH)) holds.
+    Determine if ```path``` is an existing directory. If the ```path``` is symlink then the invariant
+    (and (islink ```path```) (isdir ```path```)) holds.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:ISFILE
   [symbol]
 
 ISFILE names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Determine if the PATH exists and a file. Returns also t for symbolic links.
+    Determine if the ```path``` exists and a file. Returns also t for symbolic links.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:ISLINK
   [symbol]
 
 ISLINK names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Determine if the PATH is symbolic link.
+    Determine if the ```path``` is symbolic link.
     On Windows always return nil.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:ISMOUNT
   [symbol]
 
 ISMOUNT names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
     Test if the path is a mount point.
@@ -266,7 +250,7 @@ PPATH:JOIN
   [symbol]
 
 JOIN names a compiled function:
-  Lambda-list: (PATH &REST PATHS)
+  Lambda-list: (```path``` &REST PATHS)
   Derived type: (FUNCTION (T &REST T) *)
   Documentation:
     Join paths provided, merging (if absolute) and
@@ -286,29 +270,29 @@ PPATH:LEXISTS
   [symbol]
 
 LEXISTS names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Check if the PATH is an existing path.
-    Checks for existance regardless if PATH is a link(even broken) or a file/directory.
+    Check if the ```path``` is an existing path.
+    Checks for existance regardless if ```path``` is a link(even broken) or a file/directory.
     On Windows exists=lexists.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:NORMCASE
   [symbol]
 
 NORMCASE names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Normalize the PATH.
-    On Windows, replace slash with backslahes and lowers the case of the PATH.
-    On POSIX do nothing and just return PATH.
+    Normalize the ```path```.
+    On Windows, replace slash with backslahes and lowers the case of the ```path```.
+    On POSIX do nothing and just return ```path```.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:NORMPATH
   [symbol]
 
 NORMPATH names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
     Normalize path, removing unnecessary/redundant parts, like dots,
@@ -322,22 +306,22 @@ PPATH:REALPATH
   [symbol]
 
 REALPATH names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Return real PATH of the file, following symlinks if necessary.
+    Return real ```path``` of the file, following symlinks if necessary.
     On Windows just return (abspath path).
-    The PATH shall be already expanded properly.
-    Return nil if PATH does not exist or not accessible
+    The ```path``` shall be already expanded properly.
+    Return nil if ```path``` does not exist or not accessible
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:RELPATH
   [symbol]
 
 RELPATH names a compiled function:
-  Lambda-list: (PATH &OPTIONAL (START .))
+  Lambda-list: (```path``` &OPTIONAL (START .))
   Derived type: (FUNCTION (T &OPTIONAL T) *)
   Documentation:
-    Return the relative version of the PATH.
+    Return the relative version of the ```path```.
     If STARTDIR specified, use this as a current directory to resolve against.
   Source file: /home/fourier/Sources/lisp/ppath/src/ppath.lisp
 PPATH:SAMEFILE
@@ -368,7 +352,7 @@ PPATH:SPLIT
   [symbol]
 
 SPLIT names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
     Split the path into the pair (directory . filename).
@@ -392,7 +376,7 @@ PPATH:SPLITDRIVE
   [symbol]
 
 SPLITDRIVE names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) (VALUES CONS &OPTIONAL))
   Documentation:
     Split a path to the drive (with letter) and path after drive.
@@ -411,11 +395,11 @@ PPATH:SPLITEXT
   [symbol]
 
 SPLITEXT names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) *)
   Documentation:
-    Split PATH to root and extension. Return a pair (root . ext)
-    If the filename component of the PATH starts with dot, like .cshrc, considering no extension.
+    Split ```path``` to root and extension. Return a pair (root . ext)
+    If the filename component of the ```path``` starts with dot, like .cshrc, considering no extension.
     Invariant: (concatenate 'string root ext) == path
     
     Examples:
@@ -428,7 +412,7 @@ PPATH:SPLITUNC
   [symbol]
 
 SPLITUNC names a compiled function:
-  Lambda-list: (PATH)
+  Lambda-list: (```path```)
   Derived type: (FUNCTION (T) NIL)
   Documentation:
     Split a pathname with UNC path. UNC syntax:
