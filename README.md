@@ -353,7 +353,7 @@ Return a cons pair ```("\\host-name\share-name" . "\file_path")```
 
 ## Copyrights
 
- - Python and Python documentation Copyright (c)  1990-2017, Python Software Foundation. 
+ - Python and Python documentation Copyright (c)  1990-2018, Python Software Foundation. 
  - Parts of Python documentation on https://docs.python.org/2.7/library/os.path.html were used and adapted when necessary to the current implementation.
 
 ## License
