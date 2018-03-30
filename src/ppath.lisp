@@ -186,13 +186,26 @@ Return nil if unable to access file or get its attributes."
 
 
 (defun isabs (path)
-  "Determine if the PATH is an absolute pathname."
+  "Determine if the PATH is an absolute pathname.
+This function never checks for file existance nor address
+file system but rather performs string manipulations to
+determine if the PATH is an absolute filename.
+
+Examples (POSIX):
+CL-USER > (isabs \"/Sources/lisp\")
+=> t
+CL-USER > (isabs \"my/dir\")
+=> nil
+
+Examples (Windows):
+CL-USER > isabs \"\\\\\\\\host-name\\\\share-name\\\\\")
+=> t"
   #+windows (ppath.details.nt:isabs path)
   #-windows (ppath.details.posix:isabs path))
   
 
 (defun isfile (path)
-  "Determine if the PATH is a regular file. Returns also t for symbolic links."
+  "Determine if the PATH exists and a file. Returns also t for symbolic links."
   #+windows (ppath.details.nt:isfile path)
   #-windows (ppath.details.posix:isfile path))
 
@@ -204,7 +217,8 @@ Return nil if unable to access file or get its attributes."
   #-windows (ppath.details.posix:isdir path))
 
 (defun islink (path)
-  "Determine if the PATH is symbolic link(on OS where symbolic links supported, otherwise always return nil)."
+  "Determine if the PATH is symbolic link.
+On Windows always return nil."
   #+windows (ppath.details.nt:islink path)
   #-windows (ppath.details.posix:islink path))
   
