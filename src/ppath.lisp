@@ -28,6 +28,7 @@
    split
    splitdrive
    splitext
+   splitparts
    #+windows splitunc))
 
 
@@ -325,7 +326,7 @@ CL-USER > (split \"/foo/bar/\")
 => (\"/foo/bar/\" . \"\")"
   #+windows (ppath.details.nt:split path)
   #-windows (ppath.details.posix:split path))
-  
+
 
 (defun splitdrive (path)
   "Split a path to the drive (with letter) and path after drive.
@@ -353,6 +354,14 @@ CL-USER > (splitext \"~/test.cshrc\")
 CL-USER > (splitext \"~/notes.txt\")
 => (\"~/notes\" . \".txt\")"
   (ppath.details.generic:splitext path))
+
+
+(defun splitparts (path)
+  "Splits the path to the list of elements using. Separators are not omitted.
+Example:
+CL-USER > (splitparts \"/abc/def/gh//12\")
+=> (\"/\" \"abc\" \"/\" \"def\" \"/\" \"gh\" \"//\" \"12\")"
+  (ppath.details.generic:split-components path))
 
 
 (defun splitunc (path)

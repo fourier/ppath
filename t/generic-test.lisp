@@ -9,7 +9,10 @@
         :ppath.test.base
         :prove)
   (:shadowing-import-from ppath.details.generic
-   concat commonprefix splitext))
+                          concat
+                          commonprefix
+                          splitext
+                          split-components))
 
 (in-package :ppath.test.generic-test)
 
@@ -83,5 +86,14 @@
   (splitext-test "........" "........" "")
   (splitext-test "" "" ""))
 
+
+(subtest "Test split-components helper function"
+  (test-input split-components "/abc/def/gh//12" '("/" "abc" "/" "def" "/" "gh" "//" "12"))
+  (test-input split-components "/" '("/"))
+  (test-input split-components "/a" '("/" "a"))
+  (test-input split-components "a//bcd" '("a" "//" "bcd"))
+  (test-input split-components "//a/bcd" '("//" "a" "/" "bcd"))
+  (test-input split-components "//a/bcd/" '("//" "a" "/" "bcd" "/"))
+  (test-input split-components "" nil))
 
 (finalize)

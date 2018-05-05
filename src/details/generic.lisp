@@ -1,7 +1,7 @@
 (defpackage ppath.details.generic
-  (:use :cl :alexandria)
+  (:use :cl :alexandria :ppath.details.constants)
   (:export path-error string-type getenv getcwd concat getpid get-temp-path
-           commonprefix splitext))
+           commonprefix splitext split-components))
 
 (in-package ppath.details.generic)
 
@@ -68,30 +68,30 @@ If no common prefix return empty string."
             (subseq x 0 (or (mismatch x y :test #'equal) (length x)))) paths))
 
 
+(declaim (inline sep-p))
+(defun sep-p (c)
+  (declare (type  character c))
+  (declare (optimize (speed 3) (safety 0)))
+  (or (char= c #\\) (char= c #\/)))
+
+
 (defun splitext (path)
   "Split path to path and extension. Extension is the text
 after the last dot.
 Invariant: (concatenate 'string root ext) == p)"
-  (declaim (inline sep-p))
-  (flet ((sep-p (c)
-           (declare (type  character c))
-           (declare (optimize (speed 3) (safety 0)))
-           #+windows (or (char= c #\\) (char= c #\/))
-           #-windows (char= c #\/)
-           ))
-    (let ((ext-pos (or (position #\. path :from-end t) -1))
-          (sep-pos (or (position-if #'sep-p path :from-end t) -1)))
-      (if (>= sep-pos ext-pos) ; encountered slash from right
-          (cons path "")       ; return whole path
-          ;; check if between slash and dot exist other letters,
-          ;; otherwise its a full path like ~/.bashrc
-          (loop with i = (1+ sep-pos)
-                while (< i ext-pos)
-                unless (char= (char path i) #\.) do
-               (return (cons (subseq path 0 ext-pos) (subseq path ext-pos)))
-                end
-                do (incf i)
-                finally (return (cons path "")))))))
+  (let ((ext-pos (or (position #\. path :from-end t) -1))
+        (sep-pos (or (position-if #'sep-p path :from-end t) -1)))
+    (if (>= sep-pos ext-pos) ; encountered slash from right
+        (cons path "")       ; return whole path
+        ;; check if between slash and dot exist other letters,
+        ;; otherwise its a full path like ~/.bashrc
+        (loop with i = (1+ sep-pos)
+              while (< i ext-pos)
+              unless (char= (char path i) #\.) do
+                (return (cons (subseq path 0 ext-pos) (subseq path ext-pos)))
+              end
+              do (incf i)
+              finally (return (cons path ""))))))
 
 
 (defun wildcard-to-regex (pattern &key (case-sensitive-p t) (beginning-of-string t) (end-of-string t))
@@ -144,3 +144,29 @@ Example:
                  (when beginning-of-string "^")
                  regex
                  (when end-of-string "$"))))
+
+
+(defun split-components (path)
+  "Splits the path to the list of elements using
+slash as a separator. Separators are not omitted.
+Example:
+  (split-components \"/abc/def/gh//12\")
+  => (\"/\" \"abc\" \"/\" \"def\" \"/\" \"gh\" \"//\" \"12\")"
+  (unless (emptyp path)
+    (let (components)
+      (loop with is-sep = (sep-p (char path 0))
+            with current-word = nil
+            for x across path
+            for c = (sep-p x)
+            if (eql c is-sep) do
+            (push x current-word)
+            else do
+            (progn
+              (push current-word components)
+              (setf is-sep c)
+              (setf current-word nil)
+              (push x current-word))
+            end
+            finally (push current-word components))
+      (nreverse
+       (mapcar (compose (rcurry #'coerce 'string-type) #'nreverse) components)))))

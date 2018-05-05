@@ -29,6 +29,7 @@
    string-type
    getenv
    getcwd
+   split-components
    commonprefix))
 
 (in-package ppath.details.posix)
@@ -58,33 +59,6 @@
          (apply #'join (concat path (car paths)) (cdr paths)))
         (t ;; have to add "/" in between
          (apply #'join (concat path +sep-string+ (car paths)) (cdr paths)))))
-
-
-(defun split-components (path)
-  "Splits the path to the list of elements using
-slash as a separator. Separators are not omitted.
-Example:
-  (split-components \"/abc/def/gh//12\")
-  => (\"/\" \"abc\" \"/\" \"def\" \"/\" \"gh\" \"//\" \"12\")"
-  (unless (emptyp path)
-    (let (components)
-      (loop with is-sep = (char= +separator+ (char path 0))
-            with current-word = nil
-            for x across path
-            for c = (char= +separator+ x)
-            if (eql c is-sep) do
-            (push x current-word)
-            else do
-            (progn
-              (push current-word components)
-              (setf is-sep c)
-              (setf current-word nil)
-              (push x current-word))
-            end
-            finally (push current-word components))
-      (nreverse
-       (mapcar (compose (rcurry #'coerce 'string-type) #'nreverse) components)))))
-
 
 (defun split (path)
   "Split the path into the pair (directory . filename).

@@ -339,6 +339,15 @@ CL-USER > (splitext "~/notes.txt")
 => ("~/notes" . ".txt")
 ```
 
+### *function* ppath:splitparts (```path```)
+Split the ```path``` to the list of elements using. Separators are not omitted.
+
+Example:
+```lisp
+CL-USER > (ppath:splitparts "/abc/def/gh//12")
+=> ("/" "abc" "/" "def" "/" "gh" "//" "12")
+```
+
 ### *function* ppath:splitunc (```path```)
 Split a pathname with UNC path. UNC syntax: ```\\host-name\share-name\file_path```
 

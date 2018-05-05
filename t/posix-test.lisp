@@ -11,7 +11,6 @@
    (:shadowing-import-from :ppath.details.generic getenv concat)
    (:shadowing-import-from :ppath.details.posix 
     join
-    split-components ;; helper function
     split
     isabs
     basename
@@ -43,15 +42,6 @@
   (test-input join '("/foo/" "bar/" "baz/") "/foo/bar/baz/")
   (test-input join '("/" "/") "/")
   (test-input join '("a" "/bb") "/bb"))
-
-(subtest "Test split-path-components helper function"
-  (test-input split-components "/abc/def/gh//12" '("/" "abc" "/" "def" "/" "gh" "//" "12"))
-  (test-input split-components "/" '("/"))
-  (test-input split-components "/a" '("/" "a"))
-  (test-input split-components "a//bcd" '("a" "//" "bcd"))
-  (test-input split-components "//a/bcd" '("//" "a" "/" "bcd"))
-  (test-input split-components "//a/bcd/" '("//" "a" "/" "bcd" "/"))
-  (test-input split-components "" nil))
   
 
 (subtest "Test split"
