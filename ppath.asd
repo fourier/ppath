@@ -24,6 +24,7 @@
                #:osicat                ; for sys/stat - MIT
                #:uiop                  ; os operations like getcwd - MIT
                #:trivial-features      ; consistent *features* - MIT
+               #:cl-ppcre
                #:split-sequence)       ; general split - public domain
   :components ((:module "src"
                 :serial t

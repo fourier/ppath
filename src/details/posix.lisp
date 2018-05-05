@@ -480,4 +480,24 @@ Return value is seconds since Unix Epoch (1970-01-01T00:00:00Z)."
     (when-let ((stat (osicat-posix:stat path)))
       (slot-value stat 'osicat-posix::atime))))
 
+(defun listdir (path)
+  "Return the list of all files/directories in the PATH specified.
+Special names like . and .. are omitted.
+No specific order assumed.
+Assuming PATH is an absolute path to the directory
+Return nil if not able to access"
+  (osicat-check-no-file
+    (when-let ((dir-handle (osicat-posix:opendir path)))
+      (unwind-protect
+           (handler-case
+               (progn
+                 (loop for name  = (osicat-posix:readdir dir-handle)
+                       while name
+                       when (and (not (string= name "."))
+                                 (not (string= name "..")))
+                       collect name))
+             (t (e)
+               (declare (ignore e))
+               nil))
+        (osicat-posix:closedir dir-handle)))))
 
