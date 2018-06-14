@@ -107,6 +107,11 @@ Supported patters:
  [range] - any character in range
  [!range] - any character not in range
 
+Note that directory separator characters '/' and '\\'
+are treated the same way as other characters, so
+the function is used to treat complex paths they
+better to be splitted.
+
 Example:
 => (wildcard-to-regex \"Photo*.jpg\") 
 \"^Photo.*\\\\.jpg$\"

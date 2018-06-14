@@ -12,6 +12,7 @@
                           concat
                           commonprefix
                           splitext
+                          wildcard-to-regex
                           split-components))
 
 (in-package :ppath.test.generic-test)
@@ -85,6 +86,15 @@
   (splitext-test ".." ".." "")
   (splitext-test "........" "........" "")
   (splitext-test "" "" ""))
+
+
+(subtest "Test wildcard-to-regex"
+  (test-input wildcard-to-regex "Photo*.jpg" "^Photo.*\\.jpg$")
+  (test-input wildcard-to-regex '("Photo*.jpg" :case-sensitive-p nil) "(?i)^Photo.*\\.jpg$")
+  (test-input wildcard-to-regex '("Photo[.jpg" :case-sensitive-p nil) "(?i)^Photo\\[\\.jpg$")
+  (test-input wildcard-to-regex '("Photo[ab].jpg" :case-sensitive-p nil) "(?i)^Photo[ab]\\.jpg$")
+  (test-input wildcard-to-regex '("Photo[!ab].jpg" :case-sensitive-p nil) "(?i)^Photo[^ab]\\.jpg$")
+  (test-input wildcard-to-regex '("Photo[^ab].jpg" :case-sensitive-p nil) "(?i)^Photo[\\^ab]\\.jpg$"))
 
 
 (subtest "Test split-components helper function"
