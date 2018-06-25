@@ -21,7 +21,7 @@
   :license "BSD" ;; https://opensource.org/licenses/bsd-license.php
   :depends-on (#:alexandria            ; general utilities - Public domain
                #:cffi                  ; to access dlls (kernel32) - MIT
-               #:osicat                ; for sys/stat - MIT
+               #-(or windows win32 os-windows) #:osicat                ; for sys/stat - MIT
                #:uiop                  ; os operations like getcwd - MIT
                #:trivial-features      ; consistent *features* - MIT
                #:cl-ppcre
