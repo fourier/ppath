@@ -89,8 +89,8 @@ CL-USER > (dirname \"C:\\\\dir\\\\file.txt\")
 =>  C:\\\\dir
 
 Invariant: (dirname path) == (car (split path))"
-  #+windows (ppath.details.nt:basename path)
-  #-windows (ppath.details.posix:basename path))
+  #+windows (ppath.details.nt:dirname path)
+  #-windows (ppath.details.posix:dirname path))
 
 
 (defun exists (path)
