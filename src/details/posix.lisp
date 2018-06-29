@@ -3,6 +3,7 @@
   (:nicknames ppath-posix)
   (:export abspath
            basename
+           dirname
            exists
            expanduser
            expandvars
