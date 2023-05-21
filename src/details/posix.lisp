@@ -309,22 +309,18 @@ Example:
                        (if head (cdr components) components)))
            (result))
       (cond (tail
-             (loop with prev-normal-dir = nil
-                   for p in tail
-                   do
-                   (flet ((isup () (equal p +up-dir+))) ; shortcut
-                     (cond ((and (isup) (not prev-normal-dir) head) ; for paths like /../..
-                            nil)                                    ; ignore '..' parts
-                           ((and prev-normal-dir (isup)) ; if previous directory was normal and 
-                            (pop result)                 ; the current dir is '..', pop previous
-                            (setf prev-normal-dir nil))
-                           (t
-                            ;; otherwise push entry to the result list and set the previous
-                            ;; normal directory variable so it can be popped if next entry
-                            ;; is '..'
-                            (push p result)
-                            (when (not (isup))
-                              (setf prev-normal-dir p))))))
+             (loop for p in tail
+                   do (cond ((and (equal p +up-dir+)
+                                  (and (or head (car result))
+                                       (not (equal (car result) +up-dir+))))
+                             ;; the current dir is '..', pop previous when
+                             ;; 1. the previous component exist and is not '..', or
+                             ;; 2. we have some initial slashes (pop does nothing)
+                             (pop result))
+                            ((equal p +current-dir+)) ; skip '.'
+                            (t
+                             ;; otherwise push entry to the result list
+                             (push p result))))
              (cond (result
                     (join head (apply #'join (nreverse result))))
                    ;; if we eliminated everything but have a "/" initial, return it

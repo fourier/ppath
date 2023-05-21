@@ -229,7 +229,11 @@
   (test-input normpath "../../../dir/../../dir1/.." "../../../..")
   (test-input normpath "../../../dir/../dir1/../dir2" "../../../dir2")
   (test-input normpath "/dir1/.." "/")
-  (test-input normpath "dir1/../.." ".."))
+  (test-input normpath "dir1/../.." "..")
+  (test-input normpath "dir/foo/bar/../.."  "dir")
+  (test-input normpath "/dir/foo/bar/../.."  "/dir")
+  (test-input normpath "dir/../../foo/bar"  "../foo/bar")
+  (test-input normpath "/dir/../../foo/bar"  "/foo/bar"))
 
 (subtest "Test relpath"
   (with-mocked-function (ppath.details.generic::getcwd
